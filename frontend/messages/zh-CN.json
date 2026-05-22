@@ -69,7 +69,8 @@
   "nav": {
     "overview": "概览",
     "management": "管理功能",
-    "operations": "业务功能"
+    "operations": "业务功能",
+    "personal": "个人中心"
   },
   "language": {
     "switch": "English",

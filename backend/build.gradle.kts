@@ -37,6 +37,7 @@ dependencies {
 	implementation("org.redisson:redisson:3.46.0")
 	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("com.github.ben-manes.caffeine:caffeine")
+	implementation("commons-codec:commons-codec:1.18.0")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("com.h2database:h2")

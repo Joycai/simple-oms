@@ -58,6 +58,13 @@ export default function LoginPage() {
       }
 
       const data = await res.json()
+      // 2FA required
+      if (data.requiresOtp) {
+        sessionStorage.setItem('otp_login_username', username.trim())
+        sessionStorage.setItem('otp_login_password', password)
+        router.replace('/login/otp')
+        return
+      }
       setAuth(data.accessToken, data.refreshToken, data.username)
       router.replace('/dashboard')
     } catch {
