@@ -67,11 +67,7 @@ class AuthController(
 
     @GetMapping("/otp/setup")
     fun getOtpSetup(@AuthenticationPrincipal username: String): ResponseEntity<Map<String, Any>> {
-        val user = userRepository.findByUsername(username)!!
         val secret = totpUtil.generateSecret()
-        user.totpSecret = secret
-        user.totpEnabled = false
-        userRepository.save(user)
         val qrUrl = totpUtil.generateQrUrl(secret, username)
         return ResponseEntity.ok(mapOf("secret" to secret, "qrUrl" to qrUrl))
     }
@@ -79,8 +75,9 @@ class AuthController(
     @PostMapping("/otp/verify")
     fun verifyAndEnableOtp(@Valid @RequestBody request: TotpVerifyRequest, @AuthenticationPrincipal username: String): ResponseEntity<Map<String, Any>> {
         val user = userRepository.findByUsername(username)!!
-        val secret = user.totpSecret ?: return ResponseEntity.badRequest().body(mapOf("message" to "请先调用 GET /otp/setup"))
+        val secret = request.secret ?: return ResponseEntity.badRequest().body(mapOf("message" to "请先调用 GET /otp/setup"))
         if (!totpUtil.verifyCode(secret, request.code)) return ResponseEntity.badRequest().body(mapOf("message" to "验证码无效"))
+        user.totpSecret = secret
         user.totpEnabled = true
         val codes = generateRecoveryCodes()
         user.recoveryCodes = codes.joinToString(",")

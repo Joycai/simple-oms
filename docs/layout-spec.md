@@ -32,10 +32,12 @@ Transitioning from a centered card to a modern **Split-Screen Layout**. This cre
 - **i18n Keys**:
   - `sidebar.overview`: OVERVIEW / 概览
   - `sidebar.management`: MANAGEMENT / 管理功能
+  - `sidebar.personal`: PERSONAL / 个人中心
   - `sidebar.operations`: OPERATIONS / 业务功能
 - **Logical Groups**:
   - **OVERVIEW**: Home
   - **MANAGEMENT**: User Management, Role Management, Permission Management
+  - **PERSONAL**: Security Settings (Password & OTP)
   - **OPERATIONS**: Orders, Inventory, Reports (Disabled)
 
 ### 3. Right Workspace: "The Narrative" (Main Content)

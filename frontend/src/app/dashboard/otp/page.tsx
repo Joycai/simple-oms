@@ -43,7 +43,7 @@ export default function OtpSetupPage() {
     const token = getToken()
     const res = await fetch('/api/v1/auth/otp/verify', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code, secret }),
     })
     const data = await res.json()
     if (!res.ok) { setError(data.message); return }
@@ -90,7 +90,9 @@ export default function OtpSetupPage() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">{l('1. 用 Google Authenticator 扫描以下二维码', '1. Scan QR code with Google Authenticator')}</p>
                 {qrUrl && (
                   <div className="mt-2 rounded-lg bg-white p-3 inline-block border">
-                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrUrl)}`} alt="QR" width={180} height={180} />
+                    <img src={`https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(qrUrl)}&choe=UTF-8`} alt="QR" width={180} height={180}
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    <p className="mt-2 text-xs text-slate-400">{l('如二维码不显示，请手动输入密钥', 'If QR not shown, enter secret manually')}</p>
                   </div>
                 )}
                 <p className="mt-2 text-xs text-slate-500">{l('或手动输入密钥：', 'Or enter secret:')} <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">{secret}</code></p>
