@@ -7,15 +7,31 @@ import { useI18n } from '@/lib/i18n'
 import { logout, getUser } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
-const navItems = [
-  { key: 'home', href: '/dashboard', labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
-  { key: 'users', href: '/dashboard/users', labelZh: '用户管理', labelEn: 'Users', icon: UserIcon },
-  { key: 'roles', href: '/dashboard/roles', labelZh: '角色管理', labelEn: 'Roles', icon: ShieldIcon },
-  { key: 'permissions', href: '/dashboard/permissions', labelZh: '权限管理', labelEn: 'Permissions', icon: KeyIcon },
-  { key: 'orders', href: null, labelZh: '订单管理', labelEn: 'Orders', icon: OrderIcon },
-  { key: 'inventory', href: null, labelZh: '库存管理', labelEn: 'Inventory', icon: InventoryIcon },
-  { key: 'reports', href: null, labelZh: '数据报表', labelEn: 'Reports', icon: ReportIcon },
+const navGroups = [
+  {
+    label: 'OVERVIEW',
+    items: [
+      { key: 'home', href: '/dashboard' as string | null, labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
+    ],
+  },
+  {
+    label: 'MANAGEMENT',
+    items: [
+      { key: 'users', href: '/dashboard/users', labelZh: '用户管理', labelEn: 'Users', icon: UserIcon },
+      { key: 'roles', href: '/dashboard/roles', labelZh: '角色管理', labelEn: 'Roles', icon: ShieldIcon },
+      { key: 'permissions', href: '/dashboard/permissions', labelZh: '权限管理', labelEn: 'Permissions', icon: KeyIcon },
+    ],
+  },
+  {
+    label: 'OPERATIONS',
+    items: [
+      { key: 'orders', href: null, labelZh: '订单管理', labelEn: 'Orders', icon: OrderIcon },
+      { key: 'inventory', href: null, labelZh: '库存管理', labelEn: 'Inventory', icon: InventoryIcon },
+      { key: 'reports', href: null, labelZh: '数据报表', labelEn: 'Reports', icon: ReportIcon },
+    ],
+  },
 ]
+const navItems = navGroups.flatMap(g => g.items)
 
 function Sidebar({ collapsed }: { collapsed: boolean }) {
   const { locale } = useI18n()
@@ -36,18 +52,30 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
       </div>
 
       <nav className="flex-1 space-y-0.5 px-2 py-3">
-        {navItems.map((item) => {
-          const active = item.href === pathname
-          const inner = <><item.icon />{!collapsed && <span>{locale === 'zh-CN' ? item.labelZh : item.labelEn}</span>}</>
-          const cls = `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-            active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-300'
-              : item.href ? 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
-              : 'text-slate-400 cursor-default'
-          } ${collapsed ? 'justify-center' : ''}`
-          return item.href
-            ? <Link key={item.key} href={item.href} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</Link>
-            : <span key={item.key} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</span>
-        })}
+        {navGroups.map((group, gi) => (
+          <div key={group.label}>
+            {!collapsed && (
+              <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                {group.label}
+              </div>
+            )}
+            {collapsed && gi > 0 && <div className="border-t border-slate-200 dark:border-slate-800 mx-2 my-2" />}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const active = item.href === pathname
+                const inner = <><item.icon />{!collapsed && <span>{locale === 'zh-CN' ? item.labelZh : item.labelEn}</span>}</>
+                const cls = `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  active ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-300'
+                    : item.href ? 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
+                    : 'text-slate-400 cursor-default'
+                } ${collapsed ? 'justify-center' : ''}`
+                return item.href
+                  ? <Link key={item.key} href={item.href} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</Link>
+                  : <span key={item.key} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</span>
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-800">
