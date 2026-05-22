@@ -114,7 +114,16 @@ export default function UsersPage() {
     u.email.toLowerCase().includes(search.toLowerCase())
   )
 
-  if (loading) return <AuthGuard><div className="flex items-center justify-center p-12"><div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" /></div></AuthGuard>
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted || loading) return (
+    <AuthGuard>
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" />
+      </div>
+    </AuthGuard>
+  )
 
   return (
     <AuthGuard>
