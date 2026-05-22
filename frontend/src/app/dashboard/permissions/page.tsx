@@ -73,7 +73,13 @@ export default function PermissionsPage() {
     setTimeout(() => setToast(''), 2000)
   }
 
-  if (loading) return <AuthGuard><div className="flex items-center justify-center p-12"><div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" /></div></AuthGuard>
+  if (loading) return (
+    <AuthGuard>
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" />
+      </div>
+    </AuthGuard>
+  )
 
   return (
     <AuthGuard>

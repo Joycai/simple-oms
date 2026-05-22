@@ -103,7 +103,29 @@ class AuthController(
     @GetMapping("/user/me")
     fun getCurrentUser(@AuthenticationPrincipal username: String): ResponseEntity<Map<String, Any>> {
         val user = userRepository.findByUsername(username)!!
-        return ResponseEntity.ok(mapOf("username" to user.username, "email" to (user.email ?: ""), "totpEnabled" to user.totpEnabled))
+        return ResponseEntity.ok(mapOf(
+            "username" to user.username,
+            "email" to (user.email ?: ""),
+            "nickname" to (user.nickname ?: ""),
+            "phone" to (user.phone ?: ""),
+            "totpEnabled" to user.totpEnabled,
+        ))
+    }
+
+    @PutMapping("/user/profile")
+    fun updateProfile(@RequestBody request: UpdateProfileRequest, @AuthenticationPrincipal username: String): ResponseEntity<Map<String, Any>> {
+        val user = userRepository.findByUsername(username)!!
+        if (request.email != null && request.email != user.email && userRepository.existsByEmail(request.email))
+            return ResponseEntity.badRequest().body(mapOf("message" to "邮箱已被使用"))
+        request.nickname?.let { user.nickname = it }
+        request.phone?.let { user.phone = it }
+        request.email?.let { user.email = it }
+        userRepository.save(user)
+        return ResponseEntity.ok(mapOf(
+            "nickname" to (user.nickname ?: ""),
+            "phone" to (user.phone ?: ""),
+            "email" to (user.email ?: ""),
+        ))
     }
 
     // token helpers

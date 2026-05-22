@@ -49,7 +49,16 @@ export default function RolesPage() {
   function openEdit(r: RoleData) { setEditRole(r); setNameInput(r.name); setDescInput(r.description); setShowCreate(true) }
   function openCreate() { resetForm(); setShowCreate(true) }
 
-  if (loading) return <AuthGuard><div className="flex items-center justify-center p-12"><div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" /></div></AuthGuard>
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted || loading) return (
+    <AuthGuard>
+      <div className="flex items-center justify-center p-12">
+        <div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" />
+      </div>
+    </AuthGuard>
+  )
 
   const label = (zh: string, en: string) => locale === 'zh-CN' ? zh : en
 

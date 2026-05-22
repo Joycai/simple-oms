@@ -21,10 +21,18 @@ We will extend the "Modern Library" aesthetic to these administrative pages. The
   - Roles (Badges: `indigo-100 text-indigo-900`)
   - Join Date
   - Actions (Three dots dropdown: Edit, Reset Password, Disable, Delete)
+- **Reset Password Workflow**:
+  - Modal with "New Password" and "Confirm New Password" fields.
+  - **Constraint**: Users (including admins) **cannot** reset their own password through this interface. They must use the standard "Change Password" flow in Security Settings.
+  - **UI Implementation**: Hide the "Reset Password" action in the data table for the row corresponding to the currently logged-in user.
+  - **Backend Implementation**: The API must return an error if the target user ID matches the current authenticated user ID.
+  - Success Toast notification.
 - **Features**:
   - Global Search bar at the top-left.
   - "Add New Member" button at the top-right (`bg-indigo-900`).
-- **Dialogs**: A slide-over or modal for adding/editing users with clear `Zod` validation feedback.
+- **Dialogs**: A slide-over or modal for adding/editing users. 
+  - **Required Fields**: Username, Email, Password, **Confirm Password**, and Role selection.
+  - **Validation**: Use Zod to ensure Password and Confirm Password match.
 
 ---
 

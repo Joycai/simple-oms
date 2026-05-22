@@ -4,7 +4,9 @@ import com.joycai.simpleoms.dto.AssignRoleRequest
 import com.joycai.simpleoms.repository.PermissionRepository
 import com.joycai.simpleoms.repository.RoleRepository
 import com.joycai.simpleoms.repository.UserRepository
+import com.joycai.simpleoms.security.RefreshTokenService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -13,6 +15,8 @@ class AdminController(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
     private val permissionRepository: PermissionRepository,
+    private val passwordEncoder: PasswordEncoder,
+    private val refreshTokenService: RefreshTokenService,
 ) {
 
     @GetMapping("/users")
@@ -50,6 +54,10 @@ class AdminController(
     fun assignRoles(@PathVariable id: Long, @RequestBody request: AssignRoleRequest): ResponseEntity<Map<String, String>> {
         val user = userRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        val adminRole = roleRepository.findByName("admin")
+        if (adminRole != null && user.roles.any { it.name == "admin" } && request.roleIds.none { it == adminRole.id }) {
+            if (userRepository.countAdminUsers() <= 1) return ResponseEntity.badRequest().body(mapOf("message" to "必须保留至少一位系统管理员"))
+        }
         user.roles.clear()
         user.roles.addAll(roleRepository.findAllById(request.roleIds))
         userRepository.save(user)
@@ -63,6 +71,21 @@ class AdminController(
         user.enabled = !user.enabled
         userRepository.save(user)
         return ResponseEntity.ok(mapOf("id" to user.id, "enabled" to user.enabled))
+    }
+
+    @PutMapping("/users/{id}/reset-password")
+    fun resetPassword(@PathVariable id: Long, @RequestBody request: Map<String, String>, @org.springframework.security.core.annotation.AuthenticationPrincipal currentUser: String): ResponseEntity<Map<String, String>> {
+        val user = userRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        if (user.username == currentUser) return ResponseEntity.badRequest().body(mapOf("message" to "不能重置自己的密码，请使用修改密码功能"))
+        val newPassword = request["newPassword"]
+        if (newPassword.isNullOrBlank() || newPassword.length < 6) {
+            return ResponseEntity.badRequest().body(mapOf("message" to "密码至少6位"))
+        }
+        user.password = passwordEncoder.encode(newPassword)!!
+        userRepository.save(user)
+        refreshTokenService.revokeAllForUser(user.username)
+        return ResponseEntity.ok(mapOf("message" to "密码已重置"))
     }
 
     @GetMapping("/permissions")

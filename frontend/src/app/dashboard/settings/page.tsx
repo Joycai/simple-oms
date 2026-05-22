@@ -11,6 +11,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const [oldPw, setOldPw] = useState('')
   const [newPw, setNewPw] = useState('')
+  const [confirmPw, setConfirmPw] = useState('')
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
@@ -18,6 +19,7 @@ export default function SettingsPage() {
   async function changePassword(e: FormEvent) {
     e.preventDefault(); setError(''); setMsg('')
     if (!oldPw || !newPw) { setError(locale === 'zh-CN' ? '请填写所有字段' : 'Fill all fields'); return }
+    if (newPw !== confirmPw) { setError(locale === 'zh-CN' ? '两次密码不一致' : 'Passwords do not match'); return }
     if (newPw.length < 6) { setError(locale === 'zh-CN' ? '新密码至少6位' : 'Min 6 characters'); return }
     setLoading(true)
     try {
@@ -48,6 +50,8 @@ export default function SettingsPage() {
               <input type="password" value={oldPw} onChange={e => setOldPw(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
             <div><label className="block text-sm font-medium mb-1">{l('新密码', 'New Password')}</label>
               <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+            <div><label className="block text-sm font-medium mb-1">{l('确认新密码', 'Confirm Password')}</label>
+              <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
             <button type="submit" disabled={loading} className="w-full rounded-lg bg-indigo-900 py-2 text-sm font-medium text-white">{loading ? '...' : l('修改密码', 'Change Password')}</button>
           </form>
         </div>

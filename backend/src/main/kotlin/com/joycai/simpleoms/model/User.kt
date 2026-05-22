@@ -17,7 +17,13 @@ class User(
     var password: String,
 
     @Column(unique = true, length = 100)
-    val email: String? = null,
+    var email: String? = null,
+
+    @Column(length = 50)
+    var nickname: String? = null,
+
+    @Column(length = 30)
+    var phone: String? = null,
 
     @Column(nullable = false)
     var enabled: Boolean = true,

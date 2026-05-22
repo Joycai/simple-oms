@@ -44,6 +44,7 @@ class RoleController(
     fun update(@PathVariable id: Long, @Valid @RequestBody request: RoleRequest): ResponseEntity<Map<String, Any>> {
         val role = roleRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        if (role.name == "admin") return ResponseEntity.badRequest().body(mapOf("message" to "admin 角色不可修改"))
         if (request.name != role.name && roleRepository.existsByName(request.name)) {
             return ResponseEntity.badRequest().body(mapOf("message" to "角色名已存在"))
         }
@@ -53,6 +54,9 @@ class RoleController(
 
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
+        val role = roleRepository.findById(id).orElse(null)
+            ?: return ResponseEntity.notFound().build()
+        if (role.name == "admin") return ResponseEntity.badRequest().body(mapOf("message" to "admin 角色不可删除"))
         roleRepository.deleteById(id)
         return ResponseEntity.ok(mapOf("message" to "已删除"))
     }
@@ -68,6 +72,9 @@ class RoleController(
     fun assignPermissions(@PathVariable id: Long, @RequestBody request: AssignPermissionRequest): ResponseEntity<Map<String, String>> {
         val role = roleRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        if (role.name == "admin" && request.permissionIds.isEmpty()) {
+            return ResponseEntity.badRequest().body(mapOf("message" to "admin 角色必须保留至少一项权限"))
+        }
         role.permissions.clear()
         role.permissions.addAll(permissionRepository.findAllById(request.permissionIds))
         roleRepository.save(role)
