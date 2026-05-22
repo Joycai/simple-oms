@@ -25,6 +25,7 @@ const navGroups = [
   {
     labelKey: 'nav.personal',
     items: [
+      { key: 'profile', href: '/dashboard/profile', labelZh: '个人资料', labelEn: 'Profile', icon: UserIcon },
       { key: 'settings', href: '/dashboard/settings', labelZh: '修改密码', labelEn: 'Password', icon: SettingsIcon },
       { key: 'otp', href: '/dashboard/otp', labelZh: '两步验证', labelEn: '2FA', icon: KeyIcon },
     ],
