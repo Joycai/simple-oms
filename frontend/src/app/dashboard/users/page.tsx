@@ -26,6 +26,7 @@ export default function UsersPage() {
   const [newEmail, setNewEmail] = useState('')
   const [createError, setCreateError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
+  const [createRoles, setCreateRoles] = useState<number[]>([])
 
   useEffect(() => { loadData() }, [])
 
@@ -84,7 +85,16 @@ export default function UsersPage() {
       })
       const data = await res.json()
       if (!res.ok) { setCreateError(data.message); return }
-      setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewEmail('')
+      // Assign roles if selected
+      if (createRoles.length > 0) {
+        const userId = data.id
+        const token = getToken()
+        await fetch(`/api/v1/admin/users/${userId}/roles`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ roleIds: createRoles }),
+        })
+      }
+      setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewEmail(''); setCreateRoles([])
       loadData()
     } catch { setCreateError(locale === 'zh-CN' ? '创建失败' : 'Failed') }
     finally { setCreateLoading(false) }
@@ -196,6 +206,18 @@ export default function UsersPage() {
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
               <div><label className="block text-sm font-medium mb-1">{t('users.email')}</label>
                 <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">{t('users.roles')}</label>
+                <div className="space-y-1">
+                  {roles.map(r => (
+                    <label key={r.id} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={createRoles.includes(r.id)}
+                        onChange={e => { if (e.target.checked) setCreateRoles([...createRoles, r.id]); else setCreateRoles(createRoles.filter(id => id !== r.id)) }}
+                        className="h-4 w-4 rounded border-slate-300 text-indigo-900" />{r.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowCreateModal(false)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
                 <button type="submit" disabled={createLoading} className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white">{createLoading ? '...' : (locale === 'zh-CN' ? '创建' : 'Create')}</button>
