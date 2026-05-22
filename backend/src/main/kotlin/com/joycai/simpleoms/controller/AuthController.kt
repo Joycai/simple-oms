@@ -60,8 +60,9 @@ class AuthController(
             throw BadCredentialsException("用户名或密码错误")
         }
 
-        val accessToken = jwtUtil.generateAccessToken(user.username)
-        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(user.username)
+        val roles = user.authorities.mapNotNull { it.authority?.removePrefix("ROLE_") }
+        val accessToken = jwtUtil.generateAccessToken(user.username, roles)
+        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(user.username, roles)
         refreshTokenService.store(tokenId, user.username)
 
         return ResponseEntity.ok(
@@ -89,8 +90,9 @@ class AuthController(
 
         // Rotate: revoke old, issue new
         refreshTokenService.revoke(tokenId)
-        val newAccessToken = jwtUtil.generateAccessToken(username)
-        val (newTokenId, newRefreshToken) = jwtUtil.generateRefreshToken(username)
+        val roles = jwtUtil.extractRoles(request.refreshToken)
+        val newAccessToken = jwtUtil.generateAccessToken(username, roles)
+        val (newTokenId, newRefreshToken) = jwtUtil.generateRefreshToken(username, roles)
         refreshTokenService.store(newTokenId, username)
 
         return ResponseEntity.ok(

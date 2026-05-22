@@ -17,13 +17,20 @@ class JwtUtil(
 ) {
     private val key: SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
 
-    fun generateAccessToken(username: String): String =
-        buildToken(username, accessExpirationMs)
+    fun generateAccessToken(username: String, roles: List<String>): String =
+        Jwts.builder()
+            .subject(username)
+            .claim("roles", roles)
+            .issuedAt(Date())
+            .expiration(Date(System.currentTimeMillis() + accessExpirationMs))
+            .signWith(key)
+            .compact()
 
-    fun generateRefreshToken(username: String): Pair<String, String> {
+    fun generateRefreshToken(username: String, roles: List<String>): Pair<String, String> {
         val tokenId = UUID.randomUUID().toString()
         val token = Jwts.builder()
             .subject(username)
+            .claim("roles", roles)
             .id(tokenId)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + refreshExpirationMs))
@@ -32,16 +39,13 @@ class JwtUtil(
         return tokenId to token
     }
 
-    private fun buildToken(username: String, expirationMs: Long): String =
-        Jwts.builder()
-            .subject(username)
-            .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() + expirationMs))
-            .signWith(key)
-            .compact()
-
     fun extractUsername(token: String): String =
         parseClaims(token).subject
+
+    fun extractRoles(token: String): List<String> {
+        @Suppress("UNCHECKED_CAST")
+        return (parseClaims(token).get("roles", List::class.java) as? List<String>) ?: emptyList()
+    }
 
     fun extractTokenId(token: String): String? =
         parseClaims(token).id
