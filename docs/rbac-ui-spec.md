@@ -21,6 +21,10 @@ We will extend the "Modern Library" aesthetic to these administrative pages. The
   - Roles (Badges: `indigo-100 text-indigo-900`)
   - Join Date
   - Actions (Three dots dropdown: Edit, Reset Password, Disable, Delete)
+- **Reset Password Workflow**:
+  - Modal with "New Password" and "Confirm New Password" fields.
+  - Success Toast notification.
+  - Backend must invalidate existing user sessions.
 - **Features**:
   - Global Search bar at the top-left.
   - "Add New Member" button at the top-right (`bg-indigo-900`).

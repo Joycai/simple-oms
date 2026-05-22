@@ -28,6 +28,9 @@ export default function UsersPage() {
   const [createLoading, setCreateLoading] = useState(false)
   const [createRoles, setCreateRoles] = useState<number[]>([])
   const [msg, setMsg] = useState('')
+  const [resetUser, setResetUser] = useState<UserData | null>(null)
+  const [resetPwd, setResetPwd] = useState('')
+  const [resetError, setResetError] = useState('')
 
   useEffect(() => { loadData() }, [])
 
@@ -103,6 +106,19 @@ export default function UsersPage() {
     finally { setCreateLoading(false) }
   }
 
+  async function doResetPassword() {
+    if (!resetUser || resetPwd.length < 6) { setResetError(locale === 'zh-CN' ? '密码至少6位' : 'Min 6 chars'); return }
+    const res = await fetch(`/api/v1/admin/users/${resetUser.id}/reset-password`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({ newPassword: resetPwd }),
+    })
+    const data = await res.json()
+    if (!res.ok) { setResetError(data.message); return }
+    setResetUser(null); setResetPwd(''); setResetError('')
+    setMsg(locale === 'zh-CN' ? '密码已重置' : 'Password reset')
+    setTimeout(() => setMsg(''), 2000)
+  }
+
   function openRoleModal(user: UserData) {
     setEditingUser(user)
     setSelectedRoles(user.roles.map(r => r.id))
@@ -171,6 +187,10 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openRoleModal(u)} className="rounded px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">{t('users.assignRoles')}</button>
+                      <button onClick={() => { setResetUser(u); setResetPwd(''); setResetError('') }}
+                        className="rounded px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 dark:text-amber-400">
+                        {locale === 'zh-CN' ? '重置密码' : 'Reset'}
+                      </button>
                       <button onClick={() => toggleUser(u.id)} className={`rounded px-2 py-1 text-xs ${u.enabled ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}>
                         {u.enabled ? (locale === 'zh-CN' ? '禁用' : 'Disable') : (locale === 'zh-CN' ? '启用' : 'Enable')}
                       </button>
@@ -200,6 +220,25 @@ export default function UsersPage() {
             <div className="mt-6 flex justify-end gap-3">
               <button onClick={() => setShowRoleModal(false)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
               <button onClick={saveRoles} className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white">{locale === 'zh-CN' ? '保存' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="font-serif text-lg font-semibold">{locale === 'zh-CN' ? '重置密码' : 'Reset Password'} — {resetUser.username}</h3>
+            {resetError && <div className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{resetError}</div>}
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1">{locale === 'zh-CN' ? '新密码' : 'New Password'}</label>
+              <input type="password" value={resetPwd} onChange={e => setResetPwd(e.target.value)} placeholder={locale === 'zh-CN' ? '至少6位' : 'Min 6 chars'}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" />
+            </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <button onClick={() => setResetUser(null)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
+              <button onClick={doResetPassword} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white">{locale === 'zh-CN' ? '重置' : 'Reset'}</button>
             </div>
           </div>
         </div>
