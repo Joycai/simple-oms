@@ -15,11 +15,12 @@ class CustomUserDetailsService(
     override fun loadUserByUsername(username: String): UserDetails {
         val user = userRepository.findByUsername(username)
             ?: throw UsernameNotFoundException("用户不存在: $username")
+        val roleNames = user.roles.map { it.name }.toTypedArray()
         return User.builder()
             .username(user.username)
             .password(user.password)
             .disabled(!user.enabled)
-            .roles("USER")
+            .roles(*roleNames)
             .build()
     }
 }
