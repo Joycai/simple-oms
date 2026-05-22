@@ -50,6 +50,10 @@ class AdminController(
     fun assignRoles(@PathVariable id: Long, @RequestBody request: AssignRoleRequest): ResponseEntity<Map<String, String>> {
         val user = userRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        val adminRole = roleRepository.findByName("admin")
+        if (adminRole != null && user.roles.any { it.name == "admin" } && request.roleIds.none { it == adminRole.id }) {
+            if (userRepository.countAdminUsers() <= 1) return ResponseEntity.badRequest().body(mapOf("message" to "必须保留至少一位系统管理员"))
+        }
         user.roles.clear()
         user.roles.addAll(roleRepository.findAllById(request.roleIds))
         userRepository.save(user)
