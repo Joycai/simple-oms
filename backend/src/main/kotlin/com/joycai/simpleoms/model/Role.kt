@@ -4,7 +4,7 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "roles")
-data class Role(
+class Role(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
@@ -21,8 +21,11 @@ data class Role(
         joinColumns = [JoinColumn(name = "role_id")],
         inverseJoinColumns = [JoinColumn(name = "permission_id")],
     )
-    val permissions: MutableSet<Permission> = mutableSetOf(),
+    val permissions: MutableList<Permission> = mutableListOf(),
 
     @ManyToMany(mappedBy = "roles")
-    val users: MutableSet<User> = mutableSetOf(),
-)
+    val users: MutableList<User> = mutableListOf(),
+) {
+    override fun equals(other: Any?): Boolean = other is Role && other.id == id
+    override fun hashCode(): Int = id.hashCode()
+}

@@ -47,8 +47,8 @@ class RoleController(
         if (request.name != role.name && roleRepository.existsByName(request.name)) {
             return ResponseEntity.badRequest().body(mapOf("message" to "角色名已存在"))
         }
-        val updated = roleRepository.save(role.copy(name = request.name, description = request.description))
-        return ResponseEntity.ok(mapOf("id" to updated.id, "name" to updated.name))
+        roleRepository.save(Role(id = role.id, name = request.name, description = request.description))
+        return ResponseEntity.ok(mapOf("id" to role.id, "name" to request.name))
     }
 
     @DeleteMapping("/{id}")

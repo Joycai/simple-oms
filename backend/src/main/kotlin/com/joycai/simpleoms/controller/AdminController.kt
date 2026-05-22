@@ -60,8 +60,9 @@ class AdminController(
     fun toggleUser(@PathVariable id: Long): ResponseEntity<Map<String, Any>> {
         val user = userRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
-        val updated = userRepository.save(user.copy(enabled = !user.enabled))
-        return ResponseEntity.ok(mapOf("id" to updated.id, "enabled" to updated.enabled))
+        user.enabled = !user.enabled
+        userRepository.save(user)
+        return ResponseEntity.ok(mapOf("id" to user.id, "enabled" to user.enabled))
     }
 
     @GetMapping("/permissions")

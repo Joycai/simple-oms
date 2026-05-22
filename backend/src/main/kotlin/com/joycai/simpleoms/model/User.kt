@@ -5,7 +5,7 @@ import java.time.Instant
 
 @Entity
 @Table(name = "users")
-data class User(
+class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
@@ -20,7 +20,7 @@ data class User(
     val email: String? = null,
 
     @Column(nullable = false)
-    val enabled: Boolean = true,
+    var enabled: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
     val createdAt: Instant = Instant.now(),
@@ -31,5 +31,8 @@ data class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")],
     )
-    val roles: MutableSet<Role> = mutableSetOf(),
-)
+    val roles: MutableList<Role> = mutableListOf(),
+) {
+    override fun equals(other: Any?): Boolean = other is User && other.id == id
+    override fun hashCode(): Int = id.hashCode()
+}
