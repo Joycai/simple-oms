@@ -44,7 +44,10 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
   const { locale, t } = useI18n()
   const pathname = usePathname()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const username = getUser() || 'User'
+
+  useEffect(() => { setMounted(true) }, [])
 
   async function handleLogout() {
     await logout()
@@ -87,7 +90,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
 
       <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-800">
         <LanguageToggle />
-        {!collapsed && <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        {!collapsed && mounted && <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <div className="h-6 w-6 rounded-full bg-slate-300 dark:bg-slate-700" />{username}
         </div>}
         <button onClick={handleLogout}

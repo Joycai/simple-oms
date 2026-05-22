@@ -27,6 +27,7 @@ export default function UsersPage() {
   const [createError, setCreateError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
   const [createRoles, setCreateRoles] = useState<number[]>([])
+  const [msg, setMsg] = useState('')
 
   useEffect(() => { loadData() }, [])
 
@@ -86,8 +87,8 @@ export default function UsersPage() {
       const data = await res.json()
       if (!res.ok) { setCreateError(data.message); return }
       // Assign roles if selected
-      if (createRoles.length > 0) {
-        const userId = data.id
+      const userId = data.id
+      if (createRoles.length > 0 && userId) {
         const token = getToken()
         await fetch(`/api/v1/admin/users/${userId}/roles`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -95,6 +96,8 @@ export default function UsersPage() {
         })
       }
       setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewEmail(''); setCreateRoles([])
+      setMsg(locale === 'zh-CN' ? '用户已创建' : 'User created')
+      setTimeout(() => setMsg(''), 2000)
       loadData()
     } catch { setCreateError(locale === 'zh-CN' ? '创建失败' : 'Failed') }
     finally { setCreateLoading(false) }
