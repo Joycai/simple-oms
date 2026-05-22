@@ -20,6 +20,12 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<UserData | null>(null)
   const [selectedRoles, setSelectedRoles] = useState<number[]>([])
   const [showRoleModal, setShowRoleModal] = useState(false)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newUsername, setNewUsername] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [createError, setCreateError] = useState('')
+  const [createLoading, setCreateLoading] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -60,6 +66,30 @@ export default function UsersPage() {
     loadData()
   }
 
+  async function createUser(e: React.FormEvent) {
+    e.preventDefault(); setCreateError('')
+    if (!newUsername.trim() || !newPassword.trim()) {
+      setCreateError(t('login.usernameRequired'))
+      return
+    }
+    if (newPassword.length < 6) {
+      setCreateError(locale === 'zh-CN' ? '密码至少6位' : 'Min 6 chars')
+      return
+    }
+    setCreateLoading(true)
+    try {
+      const res = await fetch('/api/v1/auth/register', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUsername.trim(), password: newPassword, email: newEmail.trim() || null }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setCreateError(data.message); return }
+      setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewEmail('')
+      loadData()
+    } catch { setCreateError(locale === 'zh-CN' ? '创建失败' : 'Failed') }
+    finally { setCreateLoading(false) }
+  }
+
   function openRoleModal(user: UserData) {
     setEditingUser(user)
     setSelectedRoles(user.roles.map(r => r.id))
@@ -78,6 +108,10 @@ export default function UsersPage() {
       <div className="rounded-xl bg-white shadow-sm dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
           <h2 className="font-serif text-lg font-semibold text-slate-900 dark:text-slate-50">{t('users.title')}</h2>
+          <button onClick={() => { setCreateError(''); setNewUsername(''); setNewPassword(''); setNewEmail(''); setShowCreateModal(true) }}
+            className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800">
+            {locale === 'zh-CN' ? '+ 添加用户' : '+ Add User'}
+          </button>
         </div>
         <div className="p-4">
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
@@ -145,6 +179,28 @@ export default function UsersPage() {
               <button onClick={() => setShowRoleModal(false)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
               <button onClick={saveRoles} className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white">{locale === 'zh-CN' ? '保存' : 'Save'}</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <h3 className="font-serif text-lg font-semibold">{locale === 'zh-CN' ? '添加用户' : 'Add User'}</h3>
+            {createError && <div className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">{createError}</div>}
+            <form onSubmit={createUser} className="mt-4 space-y-4">
+              <div><label className="block text-sm font-medium mb-1">{t('login.username')}</label>
+                <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('login.password')}</label>
+                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+              <div><label className="block text-sm font-medium mb-1">{t('users.email')}</label>
+                <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreateModal(false)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
+                <button type="submit" disabled={createLoading} className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white">{createLoading ? '...' : (locale === 'zh-CN' ? '创建' : 'Create')}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
