@@ -13,7 +13,7 @@ data class Permission(
     val code: String,
 
     @Column(nullable = false, length = 50)
-    val group: String,
+    val module: String,
 
     @Column(nullable = false, length = 50)
     val name: String,

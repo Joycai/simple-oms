@@ -35,7 +35,7 @@ class DataInitializer {
         permissions.forEach { (code, groupName) ->
             if (permissionRepository.findByCode(code) == null) {
                 permissionRepository.save(
-                    Permission(code = code, group = groupName.first, name = groupName.second)
+                    Permission(code = code, module = groupName.first, name = groupName.second)
                 )
             }
         }

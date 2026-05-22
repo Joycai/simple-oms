@@ -7,7 +7,7 @@ import { getToken, logout } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
-interface PermGroup { group: string; permissions: { id: number; code: string; name: string }[] }
+interface PermGroup { module: string; permissions: { id: number; code: string; name: string }[] }
 interface RoleItem { id: number; name: string }
 
 function NavBar() {
@@ -133,7 +133,7 @@ export default function PermissionsPage() {
               {selectedRoleId !== null && (
                 <div className="mt-6 space-y-4">
                   {permGroups.map(group => (
-                    <div key={group.group} className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+                    <div key={group.module} className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
                       <label className="flex items-center gap-3">
                         <input
                           type="checkbox"
@@ -142,7 +142,7 @@ export default function PermissionsPage() {
                           onChange={() => toggleGroup(group)}
                           className="h-4 w-4 rounded border-slate-300 text-indigo-900"
                         />
-                        <span className="font-medium text-slate-900 dark:text-slate-50">{group.group}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-50">{group.module}</span>
                       </label>
                       <div className="mt-3 ml-7 grid grid-cols-2 gap-2 sm:grid-cols-3">
                         {group.permissions.map(perm => (

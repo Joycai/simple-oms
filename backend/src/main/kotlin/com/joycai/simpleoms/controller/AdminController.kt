@@ -67,10 +67,10 @@ class AdminController(
     @GetMapping("/permissions")
     fun listPermissions(): ResponseEntity<List<Map<String, Any>>> {
         val permissions = permissionRepository.findAll()
-            .groupBy { it.group }
-            .map { (group, perms) ->
+            .groupBy { it.module }
+            .map { (module, perms) ->
                 mapOf(
-                    "group" to group,
+                    "module" to module,
                     "permissions" to perms.map { mapOf("id" to it.id, "code" to it.code, "name" to it.name) },
                 )
             }
