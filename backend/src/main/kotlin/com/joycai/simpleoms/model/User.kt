@@ -14,7 +14,7 @@ class User(
     val username: String,
 
     @Column(nullable = false)
-    val password: String,
+    var password: String,
 
     @Column(unique = true, length = 100)
     val email: String? = null,
@@ -32,6 +32,15 @@ class User(
         inverseJoinColumns = [JoinColumn(name = "role_id")],
     )
     val roles: MutableList<Role> = mutableListOf(),
+
+    @Column(length = 32)
+    var totpSecret: String? = null,
+
+    @Column(nullable = false)
+    var totpEnabled: Boolean = false,
+
+    @Column(length = 500)
+    var recoveryCodes: String? = null,
 ) {
     override fun equals(other: Any?): Boolean = other is User && other.id == id
     override fun hashCode(): Int = id.hashCode()
