@@ -1,0 +1,34 @@
+{
+  "login": {
+    "title": "simple-oms",
+    "subtitle": "Sign in to your account",
+    "username": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "loginButton": "Sign In",
+    "loggingIn": "Signing in...",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordHint": "Not implemented yet, please contact admin",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "loginFailed": "Invalid username or password",
+    "loginError": "Login failed, please try again"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, {username}",
+    "logout": "Sign Out",
+    "empty": "No content yet"
+  },
+  "hero": {
+    "badge": "simple-oms",
+    "feature1": "Order management at your fingertips",
+    "feature2": "Data-driven, intelligent decisions",
+    "feature3": "Secure, reliable, always online"
+  },
+  "language": {
+    "switch": "中文",
+    "label": "Language"
+  }
+}

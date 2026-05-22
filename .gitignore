@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+frontend/.next/
+
+# Build output
+backend/build/
+backend/.gradle/
+backend/.kotlin/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
