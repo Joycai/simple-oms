@@ -1,20 +1,23 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { isAuthenticated, getUser } from '@/lib/auth'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (!isAuthenticated()) {
+    if (mounted && !isAuthenticated()) {
       router.replace('/login')
     }
-  }, [router])
+  }, [mounted, router])
 
-  if (!isAuthenticated()) {
-    return null
+  if (!mounted || !isAuthenticated()) {
+    return <div className="flex h-screen items-center justify-center"><div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" /></div>
   }
 
   return <>{children}</>
@@ -22,15 +25,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
 export function GuestGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (mounted && isAuthenticated()) {
       router.replace('/dashboard')
     }
-  }, [router])
+  }, [mounted, router])
 
-  if (isAuthenticated()) {
-    return null
+  if (!mounted || isAuthenticated()) {
+    return <div className="flex h-screen items-center justify-center"><div className="animate-spin h-6 w-6 border-2 border-indigo-900 border-t-transparent rounded-full" /></div>
   }
 
   return <>{children}</>
