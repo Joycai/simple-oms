@@ -74,9 +74,10 @@ class AdminController(
     }
 
     @PutMapping("/users/{id}/reset-password")
-    fun resetPassword(@PathVariable id: Long, @RequestBody request: Map<String, String>): ResponseEntity<Map<String, String>> {
+    fun resetPassword(@PathVariable id: Long, @RequestBody request: Map<String, String>, @org.springframework.security.core.annotation.AuthenticationPrincipal currentUser: String): ResponseEntity<Map<String, String>> {
         val user = userRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
+        if (user.username == currentUser) return ResponseEntity.badRequest().body(mapOf("message" to "不能重置自己的密码，请使用修改密码功能"))
         val newPassword = request["newPassword"]
         if (newPassword.isNullOrBlank() || newPassword.length < 6) {
             return ResponseEntity.badRequest().body(mapOf("message" to "密码至少6位"))
