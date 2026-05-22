@@ -51,7 +51,7 @@ class AuthController(
         if (!passwordEncoder.matches(request.password, user.password)) throw authError()
         if (!user.totpEnabled || user.totpSecret == null) throw BadCredentialsException("2FA 未启用")
         val code = request.otpCode ?: throw BadCredentialsException("请输入验证码")
-        if (!otpVerify(user, code)) throw authError()
+        if (!otpVerify(user, code)) throw BadCredentialsException("验证码无效")
         return issueTokens(user)
     }
 
