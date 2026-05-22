@@ -9,13 +9,13 @@ import { LanguageToggle } from '@/components/LanguageToggle'
 
 const navGroups = [
   {
-    label: 'OVERVIEW',
+    labelKey: 'nav.overview',
     items: [
       { key: 'home', href: '/dashboard' as string | null, labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
     ],
   },
   {
-    label: 'MANAGEMENT',
+    labelKey: 'nav.management',
     items: [
       { key: 'users', href: '/dashboard/users', labelZh: '用户管理', labelEn: 'Users', icon: UserIcon },
       { key: 'roles', href: '/dashboard/roles', labelZh: '角色管理', labelEn: 'Roles', icon: ShieldIcon },
@@ -23,7 +23,7 @@ const navGroups = [
     ],
   },
   {
-    label: 'OPERATIONS',
+    labelKey: 'nav.operations',
     items: [
       { key: 'orders', href: null, labelZh: '订单管理', labelEn: 'Orders', icon: OrderIcon },
       { key: 'inventory', href: null, labelZh: '库存管理', labelEn: 'Inventory', icon: InventoryIcon },
@@ -31,10 +31,9 @@ const navGroups = [
     ],
   },
 ]
-const navItems = navGroups.flatMap(g => g.items)
 
 function Sidebar({ collapsed }: { collapsed: boolean }) {
-  const { locale } = useI18n()
+  const { locale, t } = useI18n()
   const pathname = usePathname()
   const router = useRouter()
   const username = getUser() || 'User'
@@ -53,10 +52,10 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
 
       <nav className="flex-1 space-y-0.5 px-2 py-3">
         {navGroups.map((group, gi) => (
-          <div key={group.label}>
+          <div key={group.labelKey}>
             {!collapsed && (
               <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                {group.label}
+                {t(group.labelKey)}
               </div>
             )}
             {collapsed && gi > 0 && <div className="border-t border-slate-200 dark:border-slate-800 mx-2 my-2" />}
@@ -97,7 +96,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [collapsed, setCollapsed] = useState(false)
   const { locale } = useI18n()
   const pathname = usePathname()
-  const activeItem = navItems.find((n) => n.href === pathname)
+  const allItems = navGroups.flatMap(g => g.items)
+  const activeItem = allItems.find((n: { href: string | null }) => n.href === pathname)
   const pageTitle = activeItem ? (locale === 'zh-CN' ? activeItem.labelZh : activeItem.labelEn) : ''
 
   return (

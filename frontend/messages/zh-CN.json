@@ -66,6 +66,11 @@
     "selectRole": "选择角色",
     "save": "保存权限"
   },
+  "nav": {
+    "overview": "概览",
+    "management": "管理功能",
+    "operations": "业务功能"
+  },
   "language": {
     "switch": "English",
     "label": "语言"

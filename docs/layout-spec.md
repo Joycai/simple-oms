@@ -1,4 +1,4 @@
-# Design Spec: Login Page (Split Layout)
+﻿# Design Spec: Login Page (Split Layout)
 
 ## Aesthetic Concept
 Transitioning from a centered card to a modern **Split-Screen Layout**. This creates a beautiful contrast between the "visual storytelling" on the left and the "functional interaction" on the right.
@@ -20,10 +20,24 @@ Transitioning from a centered card to a modern **Split-Screen Layout**. This cre
   - Centered vertically and horizontally within the right pane.
 
 ## Dashboard Layout: "The Open Book"
-- **Left Sidebar**: "The Catalog" (Navigation). 
-  - Width: ~260px.
-  - Style: Clean, `bg-slate-50` with a subtle right border.
-  - Active State: `text-indigo-900 bg-indigo-50 font-medium`.
-- **Right Workspace**: "The Narrative" (Main Content).
-  - Expansive, `bg-white`.
-  - Focused on readability and data clarity.
+
+### 1. Left Sidebar: "The Catalog" (Navigation)
+- **Width**: ~260px.
+- **Style**: Clean, `bg-slate-50` with a subtle right border.
+- **Active State**: `text-indigo-900 bg-indigo-50 font-medium`.
+
+### 2. Sidebar Grouping (The Shelf Labels)
+- **Label Style**: Small, bold, uppercase, tracked-out.
+- **Tailwind Class**: `px-4 pt-6 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500`
+- **i18n Keys**:
+  - `sidebar.overview`: OVERVIEW / 概览
+  - `sidebar.management`: MANAGEMENT / 管理功能
+  - `sidebar.operations`: OPERATIONS / 业务功能
+- **Logical Groups**:
+  - **OVERVIEW**: Home
+  - **MANAGEMENT**: User Management, Role Management, Permission Management
+  - **OPERATIONS**: Orders, Inventory, Reports (Disabled)
+
+### 3. Right Workspace: "The Narrative" (Main Content)
+- **Background**: `bg-white`.
+- **Readability**: Focused on data clarity and spacious margins.

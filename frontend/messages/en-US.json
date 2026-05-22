@@ -66,6 +66,11 @@
     "selectRole": "Select Role",
     "save": "Save Permissions"
   },
+  "nav": {
+    "overview": "OVERVIEW",
+    "management": "MANAGEMENT",
+    "operations": "OPERATIONS"
+  },
   "language": {
     "switch": "中文",
     "label": "Language"
