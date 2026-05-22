@@ -45,6 +45,27 @@
     "registerError": "注册失败，请重试",
     "registerSuccess": "注册成功，请登录"
   },
+  "users": {
+    "title": "用户管理",
+    "username": "用户名",
+    "email": "邮箱",
+    "status": "状态",
+    "roles": "角色",
+    "actions": "操作",
+    "assignRoles": "分配角色"
+  },
+  "roles": {
+    "title": "角色管理",
+    "name": "角色名",
+    "description": "描述",
+    "members": "成员",
+    "permissions": "权限数"
+  },
+  "permissions": {
+    "title": "权限管理",
+    "selectRole": "选择角色",
+    "save": "保存权限"
+  },
   "language": {
     "switch": "English",
     "label": "语言"

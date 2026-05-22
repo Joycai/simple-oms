@@ -1,7 +1,7 @@
 const TOKEN_KEY = 'access_token'
 const REFRESH_KEY = 'refresh_token'
 const USER_KEY = 'current_user'
-const API_BASE = 'http://localhost:8080/api/v1'
+const API_BASE = '/api/v1'
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null

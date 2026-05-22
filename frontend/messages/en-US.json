@@ -45,6 +45,27 @@
     "registerError": "Registration failed, please try again",
     "registerSuccess": "Registration successful, please sign in"
   },
+  "users": {
+    "title": "User Management",
+    "username": "Username",
+    "email": "Email",
+    "status": "Status",
+    "roles": "Roles",
+    "actions": "Actions",
+    "assignRoles": "Assign Roles"
+  },
+  "roles": {
+    "title": "Role Management",
+    "name": "Name",
+    "description": "Description",
+    "members": "Members",
+    "permissions": "Permissions"
+  },
+  "permissions": {
+    "title": "Permission Management",
+    "selectRole": "Select Role",
+    "save": "Save Permissions"
+  },
   "language": {
     "switch": "中文",
     "label": "Language"
