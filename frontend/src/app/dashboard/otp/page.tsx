@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useI18n } from '@/lib/i18n'
 import { getToken } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
+import QRCode from 'qrcode'
 
 export default function OtpSetupPage() {
   const { locale } = useI18n()
@@ -15,6 +16,13 @@ export default function OtpSetupPage() {
   const [error, setError] = useState('')
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(true)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    if (qrUrl && canvasRef.current) {
+      QRCode.toCanvas(canvasRef.current, qrUrl, { width: 180 })
+    }
+  }, [qrUrl, canvasRef])
 
   useEffect(() => { load() }, [])
 
@@ -90,9 +98,7 @@ export default function OtpSetupPage() {
                 <p className="text-sm text-slate-600 dark:text-slate-400">{l('1. 用 Google Authenticator 扫描以下二维码', '1. Scan QR code with Google Authenticator')}</p>
                 {qrUrl && (
                   <div className="mt-2 rounded-lg bg-white p-3 inline-block border">
-                    <img src={`https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(qrUrl)}&choe=UTF-8`} alt="QR" width={180} height={180}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-                    <p className="mt-2 text-xs text-slate-400">{l('如二维码不显示，请手动输入密钥', 'If QR not shown, enter secret manually')}</p>
+                    <canvas ref={canvasRef} />
                   </div>
                 )}
                 <p className="mt-2 text-xs text-slate-500">{l('或手动输入密钥：', 'Or enter secret:')} <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">{secret}</code></p>
