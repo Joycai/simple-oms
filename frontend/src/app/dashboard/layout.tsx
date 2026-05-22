@@ -20,6 +20,11 @@ const navGroups = [
       { key: 'users', href: '/dashboard/users', labelZh: '用户管理', labelEn: 'Users', icon: UserIcon },
       { key: 'roles', href: '/dashboard/roles', labelZh: '角色管理', labelEn: 'Roles', icon: ShieldIcon },
       { key: 'permissions', href: '/dashboard/permissions', labelZh: '权限管理', labelEn: 'Permissions', icon: KeyIcon },
+    ],
+  },
+  {
+    labelKey: 'nav.personal',
+    items: [
       { key: 'settings', href: '/dashboard/settings', labelZh: '修改密码', labelEn: 'Password', icon: SettingsIcon },
       { key: 'otp', href: '/dashboard/otp', labelZh: '两步验证', labelEn: '2FA', icon: KeyIcon },
     ],

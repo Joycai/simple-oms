@@ -69,7 +69,8 @@
   "nav": {
     "overview": "OVERVIEW",
     "management": "MANAGEMENT",
-    "operations": "OPERATIONS"
+    "operations": "OPERATIONS",
+    "personal": "PERSONAL"
   },
   "language": {
     "switch": "中文",
