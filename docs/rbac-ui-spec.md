@@ -28,7 +28,9 @@ We will extend the "Modern Library" aesthetic to these administrative pages. The
 - **Features**:
   - Global Search bar at the top-left.
   - "Add New Member" button at the top-right (`bg-indigo-900`).
-- **Dialogs**: A slide-over or modal for adding/editing users with clear `Zod` validation feedback.
+- **Dialogs**: A slide-over or modal for adding/editing users. 
+  - **Required Fields**: Username, Email, Password, **Confirm Password**, and Role selection.
+  - **Validation**: Use Zod to ensure Password and Confirm Password match.
 
 ---
 

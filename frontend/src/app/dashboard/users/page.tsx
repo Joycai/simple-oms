@@ -23,6 +23,7 @@ export default function UsersPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('')
+  const [newConfirm, setNewConfirm] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [createError, setCreateError] = useState('')
   const [createLoading, setCreateLoading] = useState(false)
@@ -30,6 +31,7 @@ export default function UsersPage() {
   const [msg, setMsg] = useState('')
   const [resetUser, setResetUser] = useState<UserData | null>(null)
   const [resetPwd, setResetPwd] = useState('')
+  const [resetConfirm, setResetConfirm] = useState('')
   const [resetError, setResetError] = useState('')
 
   useEffect(() => { loadData() }, [])
@@ -81,6 +83,10 @@ export default function UsersPage() {
       setCreateError(locale === 'zh-CN' ? '密码至少6位' : 'Min 6 chars')
       return
     }
+    if (newPassword !== newConfirm) {
+      setCreateError(locale === 'zh-CN' ? '两次密码不一致' : 'Passwords do not match')
+      return
+    }
     setCreateLoading(true)
     try {
       const res = await fetch('/api/v1/auth/register', {
@@ -98,7 +104,7 @@ export default function UsersPage() {
           body: JSON.stringify({ roleIds: createRoles }),
         })
       }
-      setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewEmail(''); setCreateRoles([])
+      setShowCreateModal(false); setNewUsername(''); setNewPassword(''); setNewConfirm(''); setNewEmail(''); setCreateRoles([])
       setMsg(locale === 'zh-CN' ? '用户已创建' : 'User created')
       setTimeout(() => setMsg(''), 2000)
       loadData()
@@ -108,13 +114,14 @@ export default function UsersPage() {
 
   async function doResetPassword() {
     if (!resetUser || resetPwd.length < 6) { setResetError(locale === 'zh-CN' ? '密码至少6位' : 'Min 6 chars'); return }
+    if (resetPwd !== resetConfirm) { setResetError(locale === 'zh-CN' ? '两次密码不一致' : 'Passwords do not match'); return }
     const res = await fetch(`/api/v1/admin/users/${resetUser.id}/reset-password`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ newPassword: resetPwd }),
     })
     const data = await res.json()
     if (!res.ok) { setResetError(data.message); return }
-    setResetUser(null); setResetPwd(''); setResetError('')
+    setResetUser(null); setResetPwd(''); setResetConfirm(''); setResetError('')
     setMsg(locale === 'zh-CN' ? '密码已重置' : 'Password reset')
     setTimeout(() => setMsg(''), 2000)
   }
@@ -146,7 +153,7 @@ export default function UsersPage() {
       <div className="rounded-xl bg-white shadow-sm dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
           <h2 className="font-serif text-lg font-semibold text-slate-900 dark:text-slate-50">{t('users.title')}</h2>
-          <button onClick={() => { setCreateError(''); setNewUsername(''); setNewPassword(''); setNewEmail(''); setShowCreateModal(true) }}
+          <button onClick={() => { setCreateError(''); setNewUsername(''); setNewPassword(''); setNewConfirm(''); setNewEmail(''); setShowCreateModal(true) }}
             className="rounded-lg bg-indigo-900 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-800">
             {locale === 'zh-CN' ? '+ 添加用户' : '+ Add User'}
           </button>
@@ -187,7 +194,7 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openRoleModal(u)} className="rounded px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">{t('users.assignRoles')}</button>
-                      <button onClick={() => { setResetUser(u); setResetPwd(''); setResetError('') }}
+                      <button onClick={() => { setResetUser(u); setResetPwd(''); setResetConfirm(''); setResetError('') }}
                         className="rounded px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 dark:text-amber-400">
                         {locale === 'zh-CN' ? '重置密码' : 'Reset'}
                       </button>
@@ -236,6 +243,11 @@ export default function UsersPage() {
               <input type="password" value={resetPwd} onChange={e => setResetPwd(e.target.value)} placeholder={locale === 'zh-CN' ? '至少6位' : 'Min 6 chars'}
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" />
             </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1">{locale === 'zh-CN' ? '确认密码' : 'Confirm'}</label>
+              <input type="password" value={resetConfirm} onChange={e => setResetConfirm(e.target.value)} placeholder={locale === 'zh-CN' ? '再次输入' : 'Re-enter'}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" />
+            </div>
             <div className="flex justify-end gap-3 pt-4">
               <button onClick={() => setResetUser(null)} className="rounded-lg border px-4 py-2 text-sm">{locale === 'zh-CN' ? '取消' : 'Cancel'}</button>
               <button onClick={doResetPassword} className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white">{locale === 'zh-CN' ? '重置' : 'Reset'}</button>
@@ -255,6 +267,8 @@ export default function UsersPage() {
                 <input value={newUsername} onChange={e => setNewUsername(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
               <div><label className="block text-sm font-medium mb-1">{t('login.password')}</label>
                 <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
+              <div><label className="block text-sm font-medium mb-1">{locale === 'zh-CN' ? '确认密码' : 'Confirm Password'}</label>
+                <input type="password" value={newConfirm} onChange={e => setNewConfirm(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
               <div><label className="block text-sm font-medium mb-1">{t('users.email')}</label>
                 <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} className="w-full rounded-lg border border-slate-300 px-4 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" /></div>
               <div>
