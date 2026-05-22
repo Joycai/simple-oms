@@ -78,6 +78,18 @@ export default function ProfilePage() {
               {saving ? '...' : l('保存', 'Save')}
             </button>
           </div>
+
+          <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+            <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">{l('社交账号绑定', 'Social Accounts')}</h3>
+            <div className="space-y-2">
+              {[{icon: '💬', name: '微信', en: 'WeChat'}, {icon: '🐧', name: 'QQ', en: 'QQ'}, {icon: '🔷', name: '钉钉', en: 'DingTalk'}].map(s => (
+                <div key={s.name} className="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-2.5 dark:border-slate-800">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{s.icon} {locale === 'zh-CN' ? s.name : s.en}</span>
+                  <span className="text-xs text-slate-400 bg-slate-100 rounded px-2 py-0.5 dark:bg-slate-800">{l('即将上线', 'Coming soon')}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </AuthGuard>
