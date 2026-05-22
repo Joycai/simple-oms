@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { getToken } from '@/lib/auth'
+import { getToken, getUser } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 
 interface UserData {
@@ -194,10 +194,12 @@ export default function UsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button onClick={() => openRoleModal(u)} className="rounded px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950">{t('users.assignRoles')}</button>
-                      <button onClick={() => { setResetUser(u); setResetPwd(''); setResetConfirm(''); setResetError('') }}
-                        className="rounded px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 dark:text-amber-400">
-                        {locale === 'zh-CN' ? '重置密码' : 'Reset'}
-                      </button>
+                      {u.username !== (getUser() || '') && (
+                        <button onClick={() => { setResetUser(u); setResetPwd(''); setResetConfirm(''); setResetError('') }}
+                          className="rounded px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 dark:text-amber-400">
+                          {locale === 'zh-CN' ? '重置密码' : 'Reset'}
+                        </button>
+                      )}
                       <button onClick={() => toggleUser(u.id)} className={`rounded px-2 py-1 text-xs ${u.enabled ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}`}>
                         {u.enabled ? (locale === 'zh-CN' ? '禁用' : 'Disable') : (locale === 'zh-CN' ? '启用' : 'Enable')}
                       </button>
