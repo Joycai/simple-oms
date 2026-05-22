@@ -1,35 +1,41 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import { logout, getUser } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
 const navItems = [
-  { key: 'home', labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
-  { key: 'orders', labelZh: '订单管理', labelEn: 'Orders', icon: OrderIcon },
-  { key: 'inventory', labelZh: '库存管理', labelEn: 'Inventory', icon: InventoryIcon },
-  { key: 'reports', labelZh: '数据报表', labelEn: 'Reports', icon: ReportIcon },
+  { key: 'home', href: '/dashboard', labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
+  { key: 'users', href: '/dashboard/users', labelZh: '用户管理', labelEn: 'Users', icon: UserIcon },
+  { key: 'roles', href: '/dashboard/roles', labelZh: '角色管理', labelEn: 'Roles', icon: ShieldIcon },
+  { key: 'permissions', href: '/dashboard/permissions', labelZh: '权限管理', labelEn: 'Permissions', icon: KeyIcon },
+  { key: 'orders', href: null, labelZh: '订单管理', labelEn: 'Orders', icon: OrderIcon },
+  { key: 'inventory', href: null, labelZh: '库存管理', labelEn: 'Inventory', icon: InventoryIcon },
+  { key: 'reports', href: null, labelZh: '数据报表', labelEn: 'Reports', icon: ReportIcon },
 ]
 
 function Sidebar({
-  active,
-  setActive,
   collapsed,
 }: {
-  active: string
-  setActive: (k: string) => void
   collapsed: boolean
 }) {
   const { t, locale } = useI18n()
   const router = useRouter()
+  const pathname = usePathname()
   const username = getUser() || 'User'
 
   async function handleLogout() {
     await logout()
     router.replace('/login')
+  }
+
+  function isActive(item: typeof navItems[0]) {
+    if (!item.href) return false
+    return pathname === item.href
   }
 
   return (
@@ -48,21 +54,39 @@ function Sidebar({
 
       {/* Nav items */}
       <nav className="flex-1 space-y-0.5 px-2 py-3">
-        {navItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setActive(item.key)}
-            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-              active === item.key
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
-            } ${collapsed ? 'justify-center' : ''}`}
-            title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}
-          >
-            <item.icon />
-            {!collapsed && <span>{locale === 'zh-CN' ? item.labelZh : item.labelEn}</span>}
-          </button>
-        ))}
+        {navItems.map((item) => {
+          const active = isActive(item)
+          const inner = (
+            <>
+              <item.icon />
+              {!collapsed && <span>{locale === 'zh-CN' ? item.labelZh : item.labelEn}</span>}
+            </>
+          )
+          const cls = `flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+            active
+              ? 'bg-indigo-50 text-indigo-900 dark:bg-indigo-950 dark:text-indigo-300'
+              : item.href
+                ? 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
+                : 'text-slate-400 cursor-default'
+          } ${collapsed ? 'justify-center' : ''}`
+
+          if (item.href) {
+            return (
+              <Link key={item.key} href={item.href}
+                className={cls}
+                title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>
+                {inner}
+              </Link>
+            )
+          }
+          return (
+            <span key={item.key}
+              className={cls}
+              title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>
+              {inner}
+            </span>
+          )
+        })}
       </nav>
 
       {/* User + Footer */}
@@ -90,15 +114,14 @@ function Sidebar({
 function DashboardContent() {
   const { t, locale } = useI18n()
   const username = getUser() || 'User'
-  const [active, setActive] = useState('home')
   const [collapsed, setCollapsed] = useState(false)
-
-  const activeItem = navItems.find((n) => n.key === active)
+  const pathname = usePathname()
+  const activeItem = navItems.find((n) => n.href === pathname)
   const pageTitle = activeItem ? (locale === 'zh-CN' ? activeItem.labelZh : activeItem.labelEn) : ''
 
   return (
     <div className="flex h-screen">
-      <Sidebar active={active} setActive={setActive} collapsed={collapsed} />
+      <Sidebar collapsed={collapsed} />
 
       {/* Main content area */}
       <div className="flex flex-1 flex-col overflow-hidden">
@@ -179,6 +202,31 @@ function ReportIcon() {
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
+function ShieldIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  )
+}
+
+function KeyIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
     </svg>
   )
 }
