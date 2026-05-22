@@ -27,6 +27,24 @@
     "feature2": "Data-driven, intelligent decisions",
     "feature3": "Secure, reliable, always online"
   },
+  "register": {
+    "title": "Create Account",
+    "subtitle": "Register a new account",
+    "username": "Username",
+    "usernamePlaceholder": "Enter username (3-50 chars)",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password (min 6 chars)",
+    "email": "Email (optional)",
+    "emailPlaceholder": "Enter email",
+    "registerButton": "Sign Up",
+    "registering": "Signing up...",
+    "loginLink": "Already have an account? Sign in",
+    "usernameRequired": "Username is required",
+    "passwordRequired": "Password is required",
+    "registerFailed": "Registration failed",
+    "registerError": "Registration failed, please try again",
+    "registerSuccess": "Registration successful, please sign in"
+  },
   "language": {
     "switch": "中文",
     "label": "Language"

@@ -27,6 +27,24 @@
     "feature2": "数据驱动，智能决策",
     "feature3": "安全可靠，始终在线"
   },
+  "register": {
+    "title": "创建账户",
+    "subtitle": "注册一个新的账户",
+    "username": "用户名",
+    "usernamePlaceholder": "请输入用户名（3-50字符）",
+    "password": "密码",
+    "passwordPlaceholder": "请输入密码（至少6字符）",
+    "email": "邮箱（选填）",
+    "emailPlaceholder": "请输入邮箱",
+    "registerButton": "注 册",
+    "registering": "注册中...",
+    "loginLink": "已有账户？去登录",
+    "usernameRequired": "请输入用户名",
+    "passwordRequired": "请输入密码",
+    "registerFailed": "注册失败",
+    "registerError": "注册失败，请重试",
+    "registerSuccess": "注册成功，请登录"
+  },
   "language": {
     "switch": "English",
     "label": "语言"

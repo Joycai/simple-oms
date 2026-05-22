@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { clearAuth, getUser } from '@/lib/auth'
+import { logout, getUser } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
@@ -27,8 +27,8 @@ function Sidebar({
   const router = useRouter()
   const username = getUser() || 'User'
 
-  function handleLogout() {
-    clearAuth()
+  async function handleLogout() {
+    await logout()
     router.replace('/login')
   }
 

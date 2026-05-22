@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
-import { setAuth } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -21,63 +21,58 @@ function EyeIcon({ open }: { open: boolean }) {
   )
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const { t } = useI18n()
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    setSuccess('')
 
-    if (!username.trim()) {
-      setError(t('login.usernameRequired'))
-      return
-    }
-    if (!password.trim()) {
-      setError(t('login.passwordRequired'))
-      return
-    }
+    if (!username.trim()) { setError(t('register.usernameRequired')); return }
+    if (!password.trim()) { setError(t('register.passwordRequired')); return }
 
     setLoading(true)
     try {
-      const res = await fetch('http://localhost:8080/api/v1/auth/login', {
+      const res = await fetch('http://localhost:8080/api/v1/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+          email: email.trim() || null,
+        }),
       })
 
+      const data = await res.json()
       if (!res.ok) {
-        const data = await res.json()
-        setError(data.message || t('login.loginFailed'))
+        setError(data.message || t('register.registerFailed'))
         return
       }
 
-      const data = await res.json()
-      setAuth(data.accessToken, data.refreshToken, data.username)
-      router.replace('/dashboard')
+      setSuccess(t('register.registerSuccess'))
+      setTimeout(() => router.replace('/login'), 1500)
     } catch {
-      setError(t('login.loginError'))
+      setError(t('register.registerError'))
     } finally {
       setLoading(false)
     }
   }
 
-  function handleForgotPassword() {
-    alert(t('login.forgotPasswordHint'))
-  }
-
   return (
     <GuestGuard>
       <div className="flex min-h-screen">
-        {/* Left — Brand Panel */}
+        {/* Left — Brand Panel (same as login) */}
         <div className="relative hidden w-5/12 flex-col justify-center overflow-hidden bg-indigo-950 lg:flex">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950" />
-          {/* decorative grid */}
           <div
             className="absolute inset-0 opacity-10"
             style={{
@@ -91,43 +86,31 @@ export default function LoginPage() {
               simple-oms
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-white xl:text-4xl">
-              {t('login.title')}
+              {t('register.title')}
             </h1>
             <p className="mt-4 text-base leading-relaxed text-indigo-200/80 xl:text-lg">
-              {t('login.subtitle')}
+              {t('register.subtitle')}
             </p>
-            <div className="mt-10 space-y-4">
-              {[1, 2, 3].map((n) => (
-                <div key={n} className="flex items-center gap-3 text-sm text-indigo-200/70">
-                  <svg className="h-4 w-4 shrink-0 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>{t(`hero.feature${n}`)}</span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
 
-        {/* Right — Login Form */}
+        {/* Right — Register Form */}
         <div className="flex flex-1 items-center justify-center bg-white px-6 dark:bg-slate-950 lg:px-12">
           <div className="absolute top-4 right-4">
             <LanguageToggle />
           </div>
           <div className="w-full max-w-sm">
-            {/* Mobile-only title */}
             <div className="mb-8 text-center lg:hidden">
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
-                {t('login.title')}
+                {t('register.title')}
               </h1>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-                {t('login.subtitle')}
+                {t('register.subtitle')}
               </p>
             </div>
 
-            {/* Desktop label */}
             <p className="mb-8 hidden text-sm font-medium text-slate-500 dark:text-slate-400 lg:block">
-              {t('login.subtitle')}
+              {t('register.subtitle')}
             </p>
 
             {error && (
@@ -135,26 +118,46 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
+            {success && (
+              <div className="mb-6 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-600 dark:bg-green-950/50 dark:text-green-400">
+                {success}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('login.username')}
+                  {t('register.username')}
                 </label>
                 <input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={t('login.usernamePlaceholder')}
+                  placeholder={t('register.usernamePlaceholder')}
                   className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
                   autoComplete="username"
                 />
               </div>
 
               <div>
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  {t('register.email')}
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t('register.emailPlaceholder')}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                  autoComplete="email"
+                />
+              </div>
+
+              <div>
                 <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                  {t('login.password')}
+                  {t('register.password')}
                 </label>
                 <div className="relative">
                   <input
@@ -162,9 +165,9 @@ export default function LoginPage() {
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={t('login.passwordPlaceholder')}
+                    placeholder={t('register.passwordPlaceholder')}
                     className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -175,16 +178,6 @@ export default function LoginPage() {
                     <EyeIcon open={showPassword} />
                   </button>
                 </div>
-              </div>
-
-              <div className="text-right">
-                <button
-                  type="button"
-                  onClick={handleForgotPassword}
-                  className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                >
-                  {t('login.forgotPassword')}
-                </button>
               </div>
 
               <button
@@ -198,17 +191,22 @@ export default function LoginPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    {t('login.loggingIn')}
+                    {t('register.registering')}
                   </span>
                 ) : (
-                  t('login.loginButton')
+                  t('register.registerButton')
                 )}
               </button>
             </form>
+
+            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+              <Link href="/login" className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                {t('register.loginLink')}
+              </Link>
+            </p>
           </div>
         </div>
       </div>
     </GuestGuard>
   )
 }
-
