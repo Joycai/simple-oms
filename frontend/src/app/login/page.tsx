@@ -72,7 +72,9 @@ export default function LoginPage() {
         return
       }
       setAuth(data.accessToken, data.refreshToken, data.username)
-      router.replace('/dashboard')
+      const redirect = sessionStorage.getItem('login_redirect')
+      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      else router.replace('/dashboard')
     } catch {
       setError(t('login.loginError'))
     } finally {

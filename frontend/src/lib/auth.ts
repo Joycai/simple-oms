@@ -77,6 +77,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
       window.dispatchEvent(new Event('auth-expired'))
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         sessionStorage.setItem('login_message', '登录已过期，请重新登录')
+        sessionStorage.setItem('login_redirect', window.location.pathname)
         window.location.href = '/login'
       }
     }

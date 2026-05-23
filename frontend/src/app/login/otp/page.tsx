@@ -37,7 +37,9 @@ export default function OtpLoginPage() {
       sessionStorage.removeItem('otp_login_username')
       sessionStorage.removeItem('otp_login_password')
       setAuth(data.accessToken, data.refreshToken, data.username)
-      router.replace('/dashboard')
+      const redirect = sessionStorage.getItem('login_redirect')
+      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      else router.replace('/dashboard')
     } catch { setError(locale === 'zh-CN' ? '请求失败' : 'Request failed') }
     finally { setLoading(false) }
   }
