@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
 import { setAuth, apiFetch } from '@/lib/auth'
+import { startAuthentication } from '@simplewebauthn/browser'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -80,6 +81,39 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const [passkeyLoading, setPasskeyLoading] = useState(false)
+
+  async function handlePasskeyLogin() {
+    setError(''); setInfo(''); setPasskeyLoading(true)
+    try {
+      // Step 1: get challenge
+      const startRes = await apiFetch('/auth/webauthn/login/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: null }),
+      })
+      const options = await startRes.json()
+
+      // Step 2: browser authenticates
+      const credential = await startAuthentication(options)
+
+      // Step 3: verify
+      const finishRes = await apiFetch('/auth/webauthn/login/finish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential, username: null }),
+      })
+      const data = await finishRes.json()
+      if (!finishRes.ok) { setError(data.message || t('login.loginFailed')); return }
+      setAuth(data.accessToken, data.refreshToken, data.username)
+      const redirect = sessionStorage.getItem('login_redirect')
+      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      else router.replace('/dashboard')
+    } catch (e: any) {
+      setError(e.message || t('login.loginError'))
+    } finally { setPasskeyLoading(false) }
   }
 
   function handleForgotPassword() {
@@ -225,6 +259,20 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
+
+            <div className="mt-4">
+              <button type="button" onClick={handlePasskeyLogin} disabled={passkeyLoading}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-slate-300 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-700 disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:border-indigo-400">
+                {passkeyLoading ? (
+                  '...'
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
+                    {t('login.passkeyLogin') || 'Sign in with Passkey'}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

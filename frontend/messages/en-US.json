@@ -13,7 +13,8 @@
     "usernameRequired": "Username is required",
     "passwordRequired": "Password is required",
     "loginFailed": "Invalid username or password",
-    "loginError": "Login failed, please try again"
+    "loginError": "Login failed, please try again",
+    "passkeyLogin": "Sign in with Passkey"
   },
   "dashboard": {
     "title": "Dashboard",
