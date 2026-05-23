@@ -1,15 +1,20 @@
 package com.joycai.simpleoms.security
 
-import com.joycai.simpleoms.model.User
 import com.joycai.simpleoms.model.WebAuthnCredential
 import com.joycai.simpleoms.repository.UserRepository
 import com.joycai.simpleoms.repository.WebAuthnCredentialRepository
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.yubico.webauthn.*
+import com.yubico.webauthn.data.*
+import com.yubico.webauthn.data.ByteArray as YubiByteArray
 import org.redisson.api.RedissonClient
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.security.SecureRandom
 import java.time.Duration
-import java.util.Base64
+import java.time.Instant
+import java.util.*
 
 @Service
 class WebAuthnService(
@@ -21,88 +26,119 @@ class WebAuthnService(
     @Value("\${webauthn.origin:http://localhost:3200}") private val origin: String,
 ) {
     private val random = SecureRandom()
-    private val b64 = Base64.getUrlEncoder().withoutPadding()
+    private val json = ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
-    fun startRegistration(username: String): Map<String, Any> {
-        val challenge = generateChallenge()
-        storeChallenge("reg:$username", challenge)
-        val userId = b64.encodeToString(username.toByteArray())
+    private val rpIdentity = RelyingPartyIdentity.builder()
+        .id(rpId).name(rpName).build()
 
-        return mapOf(
-            "challenge" to challenge,
-            "rp" to mapOf("name" to rpName, "id" to rpId),
-            "user" to mapOf("id" to userId, "name" to username, "displayName" to username),
-            "pubKeyCredParams" to listOf(
-                mapOf("type" to "public-key", "alg" to -7),
-                mapOf("type" to "public-key", "alg" to -257),
-            ),
-            "authenticatorSelection" to mapOf(
-                "userVerification" to "required",
-            ),
-            "excludeCredentials" to emptyList<Map<String, String>>(),
-        )
+    private val rp: RelyingParty by lazy {
+        RelyingParty.builder()
+            .identity(rpIdentity)
+            .credentialRepository(JpaStorage())
+            .origins(setOf(origin))
+            .allowOriginPort(true)
+            .allowOriginSubdomain(true)
+            .build()
     }
 
-    data class RegistrationResponse(val id: String, val rawId: String, val type: String,
-        val response: Map<String, Any>, val clientExtensionResults: Map<String, Any> = emptyMap())
+    // ── Registration ──────────────────────────────────────────────
+
+    fun startRegistration(username: String): Map<String, Any> {
+        val user = userRepository.findByUsername(username)
+            ?: throw NoSuchElementException("User not found: $username")
+        val userHandle = toByteArray(user.id.toString())
+        val userIdentity = UserIdentity.builder()
+            .name(username)
+            .displayName(username)
+            .id(userHandle)
+            .build()
+
+        val options = rp.startRegistration(
+            StartRegistrationOptions.builder()
+                .user(userIdentity)
+                .build()
+        )
+        redisSet("reg:$username", options.toJson())
+        @Suppress("UNCHECKED_CAST")
+        return json.readValue(options.toJson(), Map::class.java) as Map<String, Any>
+    }
 
     fun finishRegistration(username: String, credential: Map<String, Any>, deviceName: String): Map<String, String> {
-        val challenge = getChallenge("reg:$username")
-        if (challenge == null) return mapOf("message" to "Challenge expired, please retry")
-        val user = userRepository.findByUsername(username) ?: return mapOf("message" to "User not found")
-        val rawId = credential["rawId"] as? String ?: return mapOf("message" to "Missing credential ID")
-        val response = credential["response"] as? Map<*, *> ?: return mapOf("message" to "Missing response")
-
+        val stored = redisGet("reg:$username")
+            ?: return mapOf("message" to "Challenge expired, please retry")
+        val request = json.readValue(stored, PublicKeyCredentialCreationOptions::class.java)
+        val pkc = PublicKeyCredential.parseRegistrationResponseJson(stripRawId(json.writeValueAsString(credential)))
+        val result = rp.finishRegistration(
+            FinishRegistrationOptions.builder()
+                .request(request)
+                .response(pkc)
+                .build()
+        )
+        val user = userRepository.findByUsername(username)!!
         credentialRepository.save(
             WebAuthnCredential(
                 user = user,
-                credentialId = rawId,
-                publicKeyJson = (response["publicKey"] as? String) ?: "",
+                credentialId = result.keyId.id.base64Url,
+                userHandle = user.id.toString(),
+                publicKeyCose = result.publicKeyCose.base64Url,
+                signatureCount = result.signatureCount,
                 deviceName = deviceName,
             )
         )
-        deleteChallenge("reg:$username")
+        redisDel("reg:$username")
         return mapOf("message" to "Passkey registered")
     }
 
+    // ── Login (Assertion) ─────────────────────────────────────────
+
     fun startLogin(username: String?): Map<String, Any> {
-        val challenge = generateChallenge()
-        storeChallenge("login:${username ?: "any"}", challenge)
-        val allowCredentials = if (username != null) {
+        val builder = StartAssertionOptions.builder()
+        if (username != null) {
             val user = userRepository.findByUsername(username)
             if (user != null) {
-                credentialRepository.findByUserId(user.id).map {
-                    mapOf("id" to it.credentialId, "type" to "public-key")
-                }
-            } else emptyList()
-        } else emptyList()
+                builder.username(username)
+            }
+        }
+        val assertion = rp.startAssertion(builder.build())
+        // Store full AssertionRequest for verification
+        redisSet("login:${username ?: "any"}", assertion.toJson())
 
-        return mapOf(
-            "challenge" to challenge,
-            "allowCredentials" to allowCredentials,
-            "userVerification" to "required",
-            "rpId" to rpId,
-        )
+        // @simplewebauthn/browser startAuthentication() expects
+        // PublicKeyCredentialRequestOptions directly (unwrapped)
+        @Suppress("UNCHECKED_CAST")
+        val full = json.readValue(assertion.toJson(), Map::class.java) as Map<String, Any>
+        @Suppress("UNCHECKED_CAST")
+        return (full["publicKeyCredentialRequestOptions"] as? Map<String, Any>)
+            ?: (full["publicKey"] as? Map<String, Any>)
+            ?: full
     }
 
     fun finishLogin(username: String?, credential: Map<String, Any>): String? {
-        val challenge = getChallenge("login:${username ?: "any"}")
-        if (challenge == null) return null
-        val rawId = credential["rawId"] as? String ?: return null
+        val key = "login:${username ?: "any"}"
+        val stored = redisGet(key) ?: return null
+        val request = json.readValue(stored, AssertionRequest::class.java)
+        val pkc = PublicKeyCredential.parseAssertionResponseJson(stripRawId(json.writeValueAsString(credential)))
+        val result = rp.finishAssertion(
+            FinishAssertionOptions.builder()
+                .request(request)
+                .response(pkc)
+                .build()
+        )
+        if (!result.isSuccess) return null
 
-        // Find the credential by rawId
-        val allCreds = if (username != null) {
-            val user = userRepository.findByUsername(username)
-            if (user != null) credentialRepository.findByUserId(user.id) else emptyList()
-        } else {
-            credentialRepository.findAll()
+        // Update signature count
+        val cred = credentialRepository.findByCredentialId(result.credentialId.base64Url)
+        if (cred != null) {
+            cred.signatureCount = result.signatureCount
+            cred.lastUsedAt = Instant.now()
+            credentialRepository.save(cred)
         }
-        val matched = allCreds.find { it.credentialId == rawId } ?: return null
-        matched.lastUsedAt = java.time.Instant.now()
-        credentialRepository.save(matched)
-        deleteChallenge("login:${username ?: "any"}")
-        return matched.user.username
+        redisDel(key)
+        return result.username
     }
+
+    // ── Management ────────────────────────────────────────────────
 
     fun listCredentials(username: String): List<Map<String, Any>> {
         val user = userRepository.findByUsername(username) ?: return emptyList()
@@ -117,14 +153,72 @@ class WebAuthnService(
     }
 
     fun deleteCredential(username: String, credentialId: Long) {
-        credentialRepository.deleteById(credentialId)
+        val user = userRepository.findByUsername(username) ?: return
+        val creds = credentialRepository.findByUserId(user.id)
+        val target = creds.find { it.id == credentialId } ?: return
+        credentialRepository.delete(target)
     }
 
-    private fun generateChallenge(): String = b64.encodeToString(ByteArray(32).also { random.nextBytes(it) })
-    private fun storeChallenge(key: String, value: String) =
+    // ── Redis helpers ─────────────────────────────────────────────
+
+    private fun redisSet(key: String, value: String) =
         redissonClient.getBucket<String>("webauthn:$key").set(value, Duration.ofMinutes(5))
-    private fun getChallenge(key: String): String? =
+
+    private fun redisGet(key: String): String? =
         redissonClient.getBucket<String>("webauthn:$key").get()
-    private fun deleteChallenge(key: String) =
+
+    private fun redisDel(key: String) =
         redissonClient.getBucket<String>("webauthn:$key").delete()
+
+    // ── helpers ────────────────────────────────────────────────────
+
+    /** @simplewebauthn/browser includes rawId in JSON; yubico parser rejects it */
+    private fun stripRawId(json: String): String =
+        json.replace(Regex("\"rawId\"\\s*:\\s*\"[^\"]*\"\\s*,\\s*"), "")
+
+    // ── yubico CredentialRepository adapter ───────────────────────
+
+    private fun toByteArray(s: String) = YubiByteArray(s.toByteArray(Charsets.UTF_8))
+
+    inner class JpaStorage : CredentialRepository {
+        override fun getCredentialIdsForUsername(username: String): Set<PublicKeyCredentialDescriptor> {
+            val user = userRepository.findByUsername(username) ?: return emptySet()
+            return credentialRepository.findByUserId(user.id).map {
+                PublicKeyCredentialDescriptor.builder()
+                    .id(YubiByteArray(Base64.getUrlDecoder().decode(it.credentialId)))
+                    .build()
+            }.toSet()
+        }
+
+        override fun getUserHandleForUsername(username: String): Optional<YubiByteArray> {
+            val user = userRepository.findByUsername(username) ?: return Optional.empty()
+            return Optional.of(toByteArray(user.id.toString()))
+        }
+
+        override fun getUsernameForUserHandle(userHandle: YubiByteArray): Optional<String> {
+            val userId = String(userHandle.bytes, Charsets.UTF_8).toLongOrNull() ?: return Optional.empty()
+            return Optional.ofNullable(userRepository.findById(userId).orElse(null)?.username)
+        }
+
+        override fun lookup(credentialId: YubiByteArray, userHandle: YubiByteArray): Optional<RegisteredCredential> {
+            val b64Id = Base64.getUrlEncoder().withoutPadding().encodeToString(credentialId.bytes)
+            val cred = credentialRepository.findByCredentialId(b64Id) ?: return Optional.empty()
+            return Optional.of(toRegisteredCredential(cred))
+        }
+
+        override fun lookupAll(credentialId: YubiByteArray): Set<RegisteredCredential> {
+            val b64Id = Base64.getUrlEncoder().withoutPadding().encodeToString(credentialId.bytes)
+            val cred = credentialRepository.findByCredentialId(b64Id) ?: return emptySet()
+            return setOf(toRegisteredCredential(cred))
+        }
+
+        private fun toRegisteredCredential(cred: WebAuthnCredential): RegisteredCredential {
+            return RegisteredCredential.builder()
+                .credentialId(YubiByteArray(Base64.getUrlDecoder().decode(cred.credentialId)))
+                .userHandle(toByteArray(cred.userHandle))
+                .publicKeyCose(YubiByteArray(Base64.getUrlDecoder().decode(cred.publicKeyCose)))
+                .signatureCount(cred.signatureCount)
+                .build()
+        }
+    }
 }

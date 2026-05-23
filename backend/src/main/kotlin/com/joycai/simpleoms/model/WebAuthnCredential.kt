@@ -17,8 +17,11 @@ class WebAuthnCredential(
     @Column(name = "credential_id", nullable = false, unique = true, length = 1000)
     val credentialId: String,
 
+    @Column(name = "user_handle", nullable = false, length = 256, columnDefinition = "VARCHAR(256) DEFAULT '0'")
+    val userHandle: String,
+
     @Column(name = "public_key", nullable = false, columnDefinition = "TEXT")
-    val publicKeyJson: String,
+    val publicKeyCose: String,
 
     @Column(name = "signature_count", nullable = false)
     var signatureCount: Long = 0,
