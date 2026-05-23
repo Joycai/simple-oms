@@ -1,79 +1,96 @@
 {
-  "login": {
-    "title": "simple-oms",
-    "subtitle": "Sign in to your account",
-    "username": "Username",
-    "usernamePlaceholder": "Enter your username",
-    "password": "Password",
-    "passwordPlaceholder": "Enter your password",
-    "loginButton": "Sign In",
-    "loggingIn": "Signing in...",
-    "forgotPassword": "Forgot password?",
-    "forgotPasswordHint": "Not implemented yet, please contact admin",
-    "usernameRequired": "Username is required",
-    "passwordRequired": "Password is required",
-    "loginFailed": "Invalid username or password",
-    "loginError": "Login failed, please try again"
-  },
-  "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome back, {username}",
-    "logout": "Sign Out",
-    "empty": "No content yet"
-  },
-  "hero": {
-    "badge": "simple-oms",
-    "feature1": "Order management at your fingertips",
-    "feature2": "Data-driven, intelligent decisions",
-    "feature3": "Secure, reliable, always online"
-  },
-  "register": {
-    "title": "Create Account",
-    "subtitle": "Register a new account",
-    "username": "Username",
-    "usernamePlaceholder": "Enter username (3-50 chars)",
-    "password": "Password",
-    "passwordPlaceholder": "Enter password (min 6 chars)",
-    "email": "Email (optional)",
-    "emailPlaceholder": "Enter email",
-    "registerButton": "Sign Up",
-    "registering": "Signing up...",
-    "loginLink": "Already have an account? Sign in",
-    "usernameRequired": "Username is required",
-    "passwordRequired": "Password is required",
-    "registerFailed": "Registration failed",
-    "registerError": "Registration failed, please try again",
-    "registerSuccess": "Registration successful, please sign in"
-  },
-  "users": {
-    "title": "User Management",
-    "username": "Username",
-    "email": "Email",
-    "status": "Status",
-    "roles": "Roles",
-    "actions": "Actions",
-    "assignRoles": "Assign Roles"
-  },
-  "roles": {
-    "title": "Role Management",
-    "name": "Name",
-    "description": "Description",
-    "members": "Members",
-    "permissions": "Permissions"
-  },
-  "permissions": {
-    "title": "Permission Management",
-    "selectRole": "Select Role",
-    "save": "Save Permissions"
-  },
-  "nav": {
-    "overview": "OVERVIEW",
-    "management": "MANAGEMENT",
-    "operations": "OPERATIONS",
-    "personal": "PERSONAL"
-  },
-  "language": {
-    "switch": "中文",
-    "label": "Language"
-  }
+    "login":  {
+                  "title":  "simple-oms",
+                  "subtitle":  "Sign in to your account",
+                  "username":  "Username",
+                  "usernamePlaceholder":  "Enter your username",
+                  "password":  "Password",
+                  "passwordPlaceholder":  "Enter your password",
+                  "loginButton":  "Sign In",
+                  "loggingIn":  "Signing in...",
+                  "forgotPassword":  "Forgot password?",
+                  "forgotPasswordHint":  "Not implemented yet, please contact admin",
+                  "usernameRequired":  "Username is required",
+                  "passwordRequired":  "Password is required",
+                  "loginFailed":  "Invalid username or password",
+                  "loginError":  "Login failed, please try again",
+                  "passkeyLogin":  "Sign in with Passkey",
+                  "passkeyPrompt":  "Use fingerprint or face to unlock...",
+                  "usePassword":  "Use Password Instead",
+                  "switchAccount":  "Switch Account",
+                  "cancelled":  "Cancelled"
+              },
+    "dashboard":  {
+                      "title":  "Dashboard",
+                      "welcome":  "Welcome back, {username}",
+                      "logout":  "Sign Out",
+                      "empty":  "No content yet"
+                  },
+    "hero":  {
+                 "badge":  "simple-oms",
+                 "feature1":  "Order management at your fingertips",
+                 "feature2":  "Data-driven, intelligent decisions",
+                 "feature3":  "Secure, reliable, always online"
+             },
+    "register":  {
+                     "title":  "Create Account",
+                     "subtitle":  "Register a new account",
+                     "username":  "Username",
+                     "usernamePlaceholder":  "Enter username (3-50 chars)",
+                     "password":  "Password",
+                     "passwordPlaceholder":  "Enter password (min 6 chars)",
+                     "email":  "Email (optional)",
+                     "emailPlaceholder":  "Enter email",
+                     "registerButton":  "Sign Up",
+                     "registering":  "Signing up...",
+                     "loginLink":  "Already have an account? Sign in",
+                     "usernameRequired":  "Username is required",
+                     "passwordRequired":  "Password is required",
+                     "registerFailed":  "Registration failed",
+                     "registerError":  "Registration failed, please try again",
+                     "registerSuccess":  "Registration successful, please sign in"
+                 },
+    "users":  {
+                  "title":  "User Management",
+                  "username":  "Username",
+                  "email":  "Email",
+                  "status":  "Status",
+                  "roles":  "Roles",
+                  "actions":  "Actions",
+                  "assignRoles":  "Assign Roles"
+              },
+    "roles":  {
+                  "title":  "Role Management",
+                  "name":  "Name",
+                  "description":  "Description",
+                  "members":  "Members",
+                  "permissions":  "Permissions"
+              },
+    "permissions":  {
+                        "title":  "Permission Management",
+                        "selectRole":  "Select Role",
+                        "save":  "Save Permissions"
+                    },
+    "nav":  {
+                "overview":  "OVERVIEW",
+                "management":  "MANAGEMENT",
+                "operations":  "OPERATIONS",
+                "personal":  "PERSONAL"
+            },
+    "language":  {
+                     "switch":  "中文",
+                     "label":  "Language"
+                 },
+    "passkeys":  {
+                     "registerButton":  "Register New Device",
+                     "lastUsed":  "Last used: ",
+                     "deviceNamePlaceholder":  "Device name (e.g. My MacBook)",
+                     "subtitle":  "Sign in with fingerprint, face, or PIN",
+                     "registeredDevices":  "Registered Devices",
+                     "success":  "Passkey registered",
+                     "created":  "Created: ",
+                     "remove":  "Remove",
+                     "title":  "Passkeys",
+                     "error":  "Registration failed"
+                 }
 }

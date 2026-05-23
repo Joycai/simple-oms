@@ -6,6 +6,7 @@ import com.joycai.simpleoms.repository.UserRepository
 import com.joycai.simpleoms.security.JwtUtil
 import com.joycai.simpleoms.security.RefreshTokenService
 import com.joycai.simpleoms.security.TotpUtil
+import com.joycai.simpleoms.security.WebAuthnService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
@@ -25,6 +26,7 @@ class AuthController(
     private val userRepository: UserRepository,
     private val refreshTokenService: RefreshTokenService,
     private val totpUtil: TotpUtil,
+    private val webAuthn: WebAuthnService,
 ) {
 
     @PostMapping("/register")
@@ -36,6 +38,26 @@ class AuthController(
         val user = userRepository.save(User(username = request.username, password = passwordEncoder.encode(request.password)!!, email = request.email))
         return ResponseEntity.ok(mapOf("id" to user.id, "username" to user.username, "email" to (user.email ?: "")))
     }
+
+    @PostMapping("/login/check")
+    fun checkLogin(@RequestBody body: Map<String, String>): ResponseEntity<Map<String, Any>> {
+        val username = body["username"] ?: return ResponseEntity.badRequest().body(mapOf("message" to "请输入用户名"))
+        val user = userRepository.findByUsername(username)
+        if (user == null) return ResponseEntity.ok(mapOf("exists" to false, "methods" to emptyList<String>()))
+
+        val methods = mutableListOf<String>()
+        val creds = webAuthn.listCredentials(username)
+        if (creds.isNotEmpty()) methods.add("passkey")
+        if (user.totpEnabled) methods.add("otp")
+        methods.add("password")
+        return ResponseEntity.ok(mapOf(
+            "exists" to true,
+            "methods" to methods,
+            "lastMethod" to (sessionStorageLastMethod(username) ?: methods.first()),
+        ))
+    }
+
+    private fun sessionStorageLastMethod(username: String): String? = null // client-side handled
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<*> {
@@ -126,6 +148,55 @@ class AuthController(
             "phone" to (user.phone ?: ""),
             "email" to (user.email ?: ""),
         ))
+    }
+
+    // WebAuthn endpoints
+
+    @PostMapping("/webauthn/register/start")
+    fun webauthnRegisterStart(@AuthenticationPrincipal username: String): ResponseEntity<Map<String, Any>> =
+        ResponseEntity.ok(webAuthn.startRegistration(username))
+
+    @PostMapping("/webauthn/register/finish")
+    fun webauthnRegisterFinish(@RequestBody body: Map<String, Any>, @AuthenticationPrincipal username: String): ResponseEntity<Map<String, String>> {
+        val deviceName = body["deviceName"] as? String ?: "Unknown"
+        @Suppress("UNCHECKED_CAST")
+        val credential = body["credential"] as? Map<String, Any> ?: return ResponseEntity.badRequest().body(mapOf("message" to "Missing credential"))
+        return ResponseEntity.ok(webAuthn.finishRegistration(username, credential, deviceName))
+    }
+
+    @PostMapping("/webauthn/login/start")
+    fun webauthnLoginStart(@RequestBody body: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+        val username = body["username"] as? String
+        return ResponseEntity.ok(webAuthn.startLogin(username))
+    }
+
+    @PostMapping("/webauthn/login/finish")
+    fun webauthnLoginFinish(@RequestBody body: Map<String, Any>): ResponseEntity<Map<String, Any>> {
+        val username = body["username"] as? String
+        @Suppress("UNCHECKED_CAST")
+        val credential = body["credential"] as? Map<String, Any> ?: return ResponseEntity.badRequest().body(mapOf("message" to "Missing credential"))
+        val resolved = webAuthn.finishLogin(username, credential)
+            ?: return ResponseEntity.badRequest().body(mapOf("message" to "Authentication failed"))
+        val user = userRepository.findByUsername(resolved)!!
+        val roles = user.roles.map { it.name }
+        val accessToken = jwtUtil.generateAccessToken(resolved, roles)
+        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(resolved, roles)
+        refreshTokenService.store(tokenId, resolved)
+        return ResponseEntity.ok(mapOf(
+            "accessToken" to accessToken,
+            "refreshToken" to refreshToken,
+            "username" to resolved,
+        ))
+    }
+
+    @GetMapping("/webauthn/credentials")
+    fun listCredentials(@AuthenticationPrincipal username: String): ResponseEntity<List<Map<String, Any>>> =
+        ResponseEntity.ok(webAuthn.listCredentials(username))
+
+    @DeleteMapping("/webauthn/credentials/{id}")
+    fun deleteCredential(@PathVariable id: Long, @AuthenticationPrincipal username: String): ResponseEntity<Map<String, String>> {
+        webAuthn.deleteCredential(username, id)
+        return ResponseEntity.ok(mapOf("message" to "Credential deleted"))
     }
 
     // token helpers

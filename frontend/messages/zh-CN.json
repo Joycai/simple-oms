@@ -1,79 +1,96 @@
 {
-  "login": {
-    "title": "simple-oms",
-    "subtitle": "登录您的账户",
-    "username": "用户名",
-    "usernamePlaceholder": "请输入用户名",
-    "password": "密码",
-    "passwordPlaceholder": "请输入密码",
-    "loginButton": "登 录",
-    "loggingIn": "登录中...",
-    "forgotPassword": "忘记密码？",
-    "forgotPasswordHint": "暂未实现，请联系管理员",
-    "usernameRequired": "请输入用户名",
-    "passwordRequired": "请输入密码",
-    "loginFailed": "用户名或密码错误",
-    "loginError": "登录失败，请重试"
-  },
-  "dashboard": {
-    "title": "控制台",
-    "welcome": "欢迎回来，{username}",
-    "logout": "退出登录",
-    "empty": "暂无内容"
-  },
-  "hero": {
-    "badge": "simple-oms",
-    "feature1": "订单管理，一手掌控",
-    "feature2": "数据驱动，智能决策",
-    "feature3": "安全可靠，始终在线"
-  },
-  "register": {
-    "title": "创建账户",
-    "subtitle": "注册一个新的账户",
-    "username": "用户名",
-    "usernamePlaceholder": "请输入用户名（3-50字符）",
-    "password": "密码",
-    "passwordPlaceholder": "请输入密码（至少6字符）",
-    "email": "邮箱（选填）",
-    "emailPlaceholder": "请输入邮箱",
-    "registerButton": "注 册",
-    "registering": "注册中...",
-    "loginLink": "已有账户？去登录",
-    "usernameRequired": "请输入用户名",
-    "passwordRequired": "请输入密码",
-    "registerFailed": "注册失败",
-    "registerError": "注册失败，请重试",
-    "registerSuccess": "注册成功，请登录"
-  },
-  "users": {
-    "title": "用户管理",
-    "username": "用户名",
-    "email": "邮箱",
-    "status": "状态",
-    "roles": "角色",
-    "actions": "操作",
-    "assignRoles": "分配角色"
-  },
-  "roles": {
-    "title": "角色管理",
-    "name": "角色名",
-    "description": "描述",
-    "members": "成员",
-    "permissions": "权限数"
-  },
-  "permissions": {
-    "title": "权限管理",
-    "selectRole": "选择角色",
-    "save": "保存权限"
-  },
-  "nav": {
-    "overview": "概览",
-    "management": "管理功能",
-    "operations": "业务功能",
-    "personal": "个人中心"
-  },
-  "language": {
-    "switch": "English",
-    "label": "语言"
-  }
+    "login":  {
+                  "title":  "simple-oms",
+                  "subtitle":  "登录您的账户",
+                  "username":  "用户名",
+                  "usernamePlaceholder":  "请输入用户名",
+                  "password":  "密码",
+                  "passwordPlaceholder":  "请输入密码",
+                  "loginButton":  "登 录",
+                  "loggingIn":  "登录中...",
+                  "forgotPassword":  "忘记密码？",
+                  "forgotPasswordHint":  "暂未实现，请联系管理员",
+                  "usernameRequired":  "请输入用户名",
+                  "passwordRequired":  "请输入密码",
+                  "loginFailed":  "用户名或密码错误",
+                  "loginError":  "登录失败，请重试",
+                  "passkeyLogin":  "通行密钥登录",
+                  "passkeyPrompt":  "请使用指纹或面部解锁...",
+                  "usePassword":  "使用密码登录",
+                  "switchAccount":  "切换账号",
+                  "cancelled":  "已取消"
+              },
+    "dashboard":  {
+                      "title":  "控制台",
+                      "welcome":  "欢迎回来，{username}",
+                      "logout":  "退出登录",
+                      "empty":  "暂无内容"
+                  },
+    "hero":  {
+                 "badge":  "simple-oms",
+                 "feature1":  "订单管理，一手掌控",
+                 "feature2":  "数据驱动，智能决策",
+                 "feature3":  "安全可靠，始终在线"
+             },
+    "register":  {
+                     "title":  "创建账户",
+                     "subtitle":  "注册一个新的账户",
+                     "username":  "用户名",
+                     "usernamePlaceholder":  "请输入用户名（3-50字符）",
+                     "password":  "密码",
+                     "passwordPlaceholder":  "请输入密码（至少6字符）",
+                     "email":  "邮箱（选填）",
+                     "emailPlaceholder":  "请输入邮箱",
+                     "registerButton":  "注 册",
+                     "registering":  "注册中...",
+                     "loginLink":  "已有账户？去登录",
+                     "usernameRequired":  "请输入用户名",
+                     "passwordRequired":  "请输入密码",
+                     "registerFailed":  "注册失败",
+                     "registerError":  "注册失败，请重试",
+                     "registerSuccess":  "注册成功，请登录"
+                 },
+    "users":  {
+                  "title":  "用户管理",
+                  "username":  "用户名",
+                  "email":  "邮箱",
+                  "status":  "状态",
+                  "roles":  "角色",
+                  "actions":  "操作",
+                  "assignRoles":  "分配角色"
+              },
+    "roles":  {
+                  "title":  "角色管理",
+                  "name":  "角色名",
+                  "description":  "描述",
+                  "members":  "成员",
+                  "permissions":  "权限数"
+              },
+    "permissions":  {
+                        "title":  "权限管理",
+                        "selectRole":  "选择角色",
+                        "save":  "保存权限"
+                    },
+    "nav":  {
+                "overview":  "概览",
+                "management":  "管理功能",
+                "operations":  "业务功能",
+                "personal":  "个人中心"
+            },
+    "language":  {
+                     "switch":  "English",
+                     "label":  "语言"
+                 },
+    "passkeys":  {
+                     "registerButton":  "注册新设备",
+                     "lastUsed":  "上次使用: ",
+                     "deviceNamePlaceholder":  "设备名称 (如: 我的 MacBook)",
+                     "subtitle":  "使用指纹、面部或 PIN 码快速登录",
+                     "registeredDevices":  "已注册设备",
+                     "success":  "通行密钥已注册",
+                     "created":  "创建: ",
+                     "remove":  "删除",
+                     "title":  "通行密钥 (Passkey)",
+                     "error":  "注册失败"
+                 }
 }
