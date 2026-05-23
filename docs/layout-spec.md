@@ -1,45 +1,39 @@
-﻿# Design Spec: Login Page (Split Layout)
+# Design Spec: Login Page (Multi-Step Split Layout) — v1.3
 
-## Aesthetic Concept
-Transitioning from a centered card to a modern **Split-Screen Layout**. This creates a beautiful contrast between the "visual storytelling" on the left and the "functional interaction" on the right.
+## 1. Aesthetic Concept
+Evolving the **Split-Screen Layout** into a dynamic, two-step interactive journey. We aim for a sense of "Recognition" followed by "Authentication".
 
-## Layout Structure (Split 1:1 or 2:3)
+## 2. Interaction Flow
 
-### 1. Left Side: "The Library Wing" (Brand/Visual Area)
-- **Background**: `bg-indigo-950` or a muted, high-quality image of a bookshelf/library.
-- **Content**: 
-  - **Logo/Title**: Large, elegant `font-serif` text (e.g., "Joycai OMS").
-  - **Tagline**: A subtle, poetic subtext about the project.
-  - **Vibe**: Dark, sophisticated, and atmospheric.
+### Step 1: Identification (Who are you?)
+- **UI State**: Only the Username field is visible.
+- **Header**: "Sign in to Joycai OMS" (Standard `font-serif` title).
+- **Primary Action**: "Next" button (`bg-indigo-900`).
+- **Secondary Action**: "Register for a library card" (Link to `/register`).
+- **Vibe**: Clean and focused.
 
-### 2. Right Side: "The Study Desk" (Login Area)
-- **Background**: `bg-white` or `bg-slate-50`.
-- **Content**:
-  - The login form remains consistent with the previous spec (outlined inputs, blue-600 buttons).
-  - Since it's half-width, we can remove the outer `Card` shadow or keep it very subtle to let the form feel part of the page surface.
-  - Centered vertically and horizontally within the right pane.
+### Step 2: Authentication (Prove it's you)
+- **UI State**: Transition animation (Slide-left or Fade) to the password/passkey view.
+- **User Identity Display**: 
+  - Show the entered username at the top with a subtle avatar placeholder.
+  - Action: "Not you? [Change account]" small link.
+- **Dynamic Choice**:
+  - **Scenario A: Passkey User**
+    - Show: "Sign in with your biometric key..." status.
+    - Automatic: Trigger WebAuthn popup on mount.
+    - Fallback: "Use my password instead" button.
+  - **Scenario B: Password + OTP User**
+    - Show: Password input field.
+    - Action: "Sign In" button -> Leads to 2FA page.
+  - **Scenario C: Password Only**
+    - Show: Password input field + "Sign In" button.
 
-## Dashboard Layout: "The Open Book"
+## 3. Visual Standard (Additions)
+- **Transition Animation**: Use `framer-motion` or CSS transitions for a smooth horizontal shift between steps.
+- **The "Library Seal"**: When identifying, show a shimmering loading state (skeleton) while checking the backend.
 
-### 1. Left Sidebar: "The Catalog" (Navigation)
-- **Width**: ~260px.
-- **Style**: Clean, `bg-slate-50` with a subtle right border.
-- **Active State**: `text-indigo-900 bg-indigo-50 font-medium`.
+---
 
-### 2. Sidebar Grouping (The Shelf Labels)
-- **Label Style**: Small, bold, uppercase, tracked-out.
-- **Tailwind Class**: `px-4 pt-6 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500`
-- **i18n Keys**:
-  - `sidebar.overview`: OVERVIEW / 概览
-  - `sidebar.management`: MANAGEMENT / 管理功能
-  - `sidebar.personal`: PERSONAL / 个人中心
-  - `sidebar.operations`: OPERATIONS / 业务功能
-- **Logical Groups**:
-  - **OVERVIEW**: Home
-  - **MANAGEMENT**: User Management, Role Management, Permission Management
-  - **PERSONAL**: Security Settings (Password & OTP)
-  - **OPERATIONS**: Orders, Inventory, Reports (Disabled)
-
-### 3. Right Workspace: "The Narrative" (Main Content)
-- **Background**: `bg-white`.
-- **Readability**: Focused on data clarity and spacious margins.
+## UI Tokens
+- **Step Indicator**: Small dots at the bottom if needed, though a simple "Back" arrow is cleaner.
+- **Indigo-900**: Retained for all primary pathing.
