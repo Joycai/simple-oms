@@ -19,7 +19,7 @@ export default function ProfilePage() {
 
   async function load() {
     const token = getToken()
-    const res = await apiFetch('/api/v1/auth/user/me', { headers: { Authorization: `Bearer ${token}` } })
+    const res = await apiFetch('/auth/user/me', { headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) {
       const d = await res.json()
       setNickname(d.nickname || '')
@@ -34,7 +34,7 @@ export default function ProfilePage() {
     setSaving(true)
     try {
       const token = getToken()
-      const res = await apiFetch('/api/v1/auth/user/profile', {
+      const res = await apiFetch('/auth/user/profile', {
         method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ nickname: nickname.trim() || null, email: email.trim() || null, phone: phone.trim() || null }),
       })

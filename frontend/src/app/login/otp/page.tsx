@@ -28,7 +28,7 @@ export default function OtpLoginPage() {
 
     setLoading(true)
     try {
-      const res = await apiFetch('/api/v1/auth/login/otp', {
+      const res = await apiFetch('/auth/login/otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, otpCode: code.trim() }),
       })

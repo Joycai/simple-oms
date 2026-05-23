@@ -20,7 +20,7 @@ export default function RolesPage() {
   useEffect(() => { loadRoles() }, [])
 
   async function loadRoles() {
-    const res = await apiFetch('/api/v1/roles', { headers: { Authorization: `Bearer ${getToken()}` } })
+    const res = await apiFetch('/roles', { headers: { Authorization: `Bearer ${getToken()}` } })
     if (res.ok) setRoles(await res.json())
     setLoading(false)
   }
@@ -31,7 +31,7 @@ export default function RolesPage() {
     setError('')
     if (!nameInput.trim()) { setError('角色名不能为空'); return }
     const token = getToken()
-    const url = editRole ? `/api/v1/roles/${editRole.id}` : '/api/v1/roles'
+    const url = editRole ? `/roles/${editRole.id}` : '/roles'
     const method = editRole ? 'PUT' : 'POST'
     const res = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -42,7 +42,7 @@ export default function RolesPage() {
   }
 
   async function deleteRole(id: number) {
-    await apiFetch(`/api/v1/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } })
+    await apiFetch(`/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } })
     loadRoles()
   }
 

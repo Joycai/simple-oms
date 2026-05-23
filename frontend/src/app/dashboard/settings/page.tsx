@@ -24,7 +24,7 @@ export default function SettingsPage() {
     setLoading(true)
     try {
       const token = getToken()
-      const res = await apiFetch('/api/v1/auth/change-password', {
+      const res = await apiFetch('/auth/change-password', {
         method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw }),
       })

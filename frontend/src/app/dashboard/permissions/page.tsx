@@ -24,8 +24,8 @@ export default function PermissionsPage() {
     const headers = { Authorization: `Bearer ${token}` }
     try {
       const [pRes, rRes] = await Promise.all([
-        apiFetch('/api/v1/admin/permissions', { headers }),
-        apiFetch('/api/v1/roles', { headers }),
+        apiFetch('/admin/permissions', { headers }),
+        apiFetch('/roles', { headers }),
       ])
       if (pRes.ok) setPermGroups(await pRes.json())
       if (rRes.ok) setRoles(await rRes.json())
@@ -36,7 +36,7 @@ export default function PermissionsPage() {
   async function selectRole(roleId: number) {
     setSelectedRoleId(roleId)
     const token = getToken()
-    const res = await apiFetch(`/api/v1/roles/${roleId}/permissions`, { headers: { Authorization: `Bearer ${token}` } })
+    const res = await apiFetch(`/roles/${roleId}/permissions`, { headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) setAssignedPerms(new Set(await res.json()))
   }
 
@@ -64,7 +64,7 @@ export default function PermissionsPage() {
   async function savePermissions() {
     if (selectedRoleId === null) return
     const token = getToken()
-    await apiFetch(`/api/v1/roles/${selectedRoleId}/permissions`, {
+    await apiFetch(`/roles/${selectedRoleId}/permissions`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ permissionIds: Array.from(assignedPerms) }),
