@@ -53,6 +53,11 @@ export function I18nProvider({ children, initialLocale = 'zh-CN' }: { children: 
         value = (value as Record<string, unknown>)[k]
       }
       let result = (value as string) ?? key
+
+      if (result === key && key.includes(".")) {
+        console.warn(`[i18n] Missing key: "${key}" in locale: "${locale}"`);
+      }
+
       if (params) {
         for (const [k, v] of Object.entries(params)) {
           result = result.replace(`{${k}}`, v)

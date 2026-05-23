@@ -51,6 +51,7 @@ export default function LoginPage() {
       if (!data.exists) { setError(t('login.loginFailed')); return }
       if (data.methods?.includes('passkey')) {
         setHasPasskey(true)
+        setStep('passkey')
         handlePasskeyLogin()
         return
       }
