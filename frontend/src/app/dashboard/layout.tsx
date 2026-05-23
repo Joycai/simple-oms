@@ -138,8 +138,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [pathname, router])
 
-  const allItems = navGroups.flatMap(g => g.items)
-  const activeItem = allItems.find((n: { href: string | null }) => n.href === pathname)
+  const allItems = navGroups.flatMap(g => g.items as Array<{key: string; href: string | null; labelZh: string; labelEn: string; icon: () => React.JSX.Element}>)
+  const activeItem = allItems.find((n) => n.href === pathname)
   const pageTitle = activeItem ? (locale === 'zh-CN' ? activeItem.labelZh : activeItem.labelEn) : ''
 
   const adminPaths = ['/dashboard/users', '/dashboard/roles', '/dashboard/permissions']
