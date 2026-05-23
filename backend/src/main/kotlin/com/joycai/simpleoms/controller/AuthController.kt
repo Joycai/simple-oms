@@ -64,6 +64,11 @@ class AuthController(
         val user = userRepository.findByUsername(request.username) ?: throw authError()
         if (!passwordEncoder.matches(request.password, user.password)) throw authError()
         if (user.totpEnabled) return ResponseEntity.ok(mapOf("requiresOtp" to true, "username" to user.username))
+
+        val creds = webAuthn.listCredentials(user.username)
+        if (creds.isNotEmpty()) return ResponseEntity.ok(
+            webAuthn.startLogin(user.username) + mapOf("requiresPasskey" to true, "username" to user.username)
+        )
         return issueTokens(user)
     }
 

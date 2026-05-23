@@ -28,8 +28,6 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [step, setStep] = useState<'username' | 'password' | 'otp'>('username')
-  const [authMethods, setAuthMethods] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -38,28 +36,6 @@ export default function LoginPage() {
     const msg = sessionStorage.getItem('login_message')
     if (msg) { setInfo(msg); sessionStorage.removeItem('login_message') }
   }, [])
-
-  async function checkUsername(e: FormEvent) {
-    e.preventDefault(); setError(''); setLoading(true)
-    try {
-      const res = await fetch('/api/v1/auth/login/check', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim() }),
-      })
-      const data = await res.json()
-      if (!data.exists) { setError(t('login.loginFailed')); return }
-      setAuthMethods(data.methods || ['password'])
-      const lastMethod = sessionStorage.getItem('last_login_method')
-      if (lastMethod && data.methods?.includes(lastMethod)) {
-        if (lastMethod === 'passkey') { handlePasskeyLogin(); return }
-      }
-      if (data.methods?.includes('passkey')) {
-        handlePasskeyLogin(); return
-      }
-      setStep('password')
-    } catch { setError(t('login.loginError')) }
-    finally { setLoading(false) }
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -96,6 +72,25 @@ export default function LoginPage() {
         router.replace('/login/otp')
         return
       }
+      // Passkey required
+      if (data.requiresPasskey) {
+        try {
+          const credential = await startAuthentication(data)
+          const finishRes = await fetch('/api/v1/auth/webauthn/login/finish', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential, username: username.trim() }),
+          })
+          const fData = await finishRes.json()
+          if (!finishRes.ok) { setError(fData.message || t('login.loginFailed')); return }
+          setAuth(fData.accessToken, fData.refreshToken, fData.username)
+          const redirect = sessionStorage.getItem('login_redirect')
+          if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+          else router.replace('/dashboard')
+        } catch (e: any) {
+          setError(e.message || t('login.loginError'))
+        } finally { setLoading(false) }
+        return
+      }
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
       if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
@@ -105,39 +100,6 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const [passkeyLoading, setPasskeyLoading] = useState(false)
-
-  async function handlePasskeyLogin() {
-    setError(''); setInfo(''); setPasskeyLoading(true)
-    try {
-      // Step 1: get challenge
-      const startRes = await apiFetch('/auth/webauthn/login/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: null }),
-      })
-      const options = await startRes.json()
-
-      // Step 2: browser authenticates
-      const credential = await startAuthentication(options)
-
-      // Step 3: verify
-      const finishRes = await apiFetch('/auth/webauthn/login/finish', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential, username: null }),
-      })
-      const data = await finishRes.json()
-      if (!finishRes.ok) { setError(data.message || t('login.loginFailed')); return }
-      setAuth(data.accessToken, data.refreshToken, data.username)
-      const redirect = sessionStorage.getItem('login_redirect')
-      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
-      else router.replace('/dashboard')
-    } catch (e: any) {
-      setError(e.message || t('login.loginError'))
-    } finally { setPasskeyLoading(false) }
   }
 
   function handleForgotPassword() {
@@ -214,73 +176,38 @@ export default function LoginPage() {
               </div>
             )}
 
-            {step === 'username' ? (
-              <form onSubmit={checkUsername} className="space-y-4">
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                    {t('login.username')}
-                  </label>
-                  <input id="username" type="text" value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder={t('login.usernamePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
-                    autoComplete="username" autoFocus />
-                </div>
-                <button type="submit" disabled={loading}
-                  className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
-                  {loading ? '...' : '下一步'}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{username}
-                    <button type="button" onClick={() => { setStep('username'); setPassword('') }} className="ml-2 text-xs text-blue-500 hover:text-blue-700">{'切换'}</button>
-                  </label>
-                </div>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.password')}</label>
-                  <div className="relative">
-                    <input id="password" type={showPassword ? 'text' : 'password'} value={password}
-                      onChange={(e) => setPassword(e.target.value)} placeholder={t('login.passwordPlaceholder')}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
-                      autoComplete="current-password" autoFocus />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
-                      <EyeIcon open={showPassword} />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <button type="button" onClick={handleForgotPassword}
-                    className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">{t('login.forgotPassword')}</button>
-                </div>
-                <button type="submit" disabled={loading}
-                  className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-500 dark:hover:bg-blue-600">
-                  {loading ? (<span className="flex items-center justify-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>{t('login.loggingIn')}</span>) : t('login.loginButton')}
-                </button>
-                {authMethods.includes('passkey') && (
-                  <button type="button" onClick={handlePasskeyLogin} disabled={passkeyLoading}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-slate-300 py-2.5 text-sm font-medium text-slate-700 hover:border-indigo-500 hover:text-indigo-700 disabled:opacity-60 dark:border-slate-600 dark:text-slate-300">
-                    {passkeyLoading ? '...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>{t('login.passkeyLogin')}</>}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                  {t('login.username')}
+                </label>
+                <input id="username" type="text" value={username}
+                  onChange={(e) => setUsername(e.target.value)} placeholder={t('login.usernamePlaceholder')}
+                  className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                  autoComplete="username" />
+              </div>
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.password')}</label>
+                <div className="relative">
+                  <input id="password" type={showPassword ? 'text' : 'password'} value={password}
+                    onChange={(e) => setPassword(e.target.value)} placeholder={t('login.passwordPlaceholder')}
+                    className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
+                    autoComplete="current-password" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600" tabIndex={-1}>
+                    <EyeIcon open={showPassword} />
                   </button>
-                )}
-              </form>
-            )}
-
-            <div className="mt-4">
-              <button type="button" onClick={handlePasskeyLogin} disabled={passkeyLoading}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-slate-300 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-700 disabled:opacity-60 dark:border-slate-600 dark:text-slate-300 dark:hover:border-indigo-400">
-                {passkeyLoading ? (
-                  '...'
-                ) : (
-                  <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
-                    {t('login.passkeyLogin') || 'Sign in with Passkey'}
-                  </>
-                )}
+                </div>
+              </div>
+              <div className="text-right">
+                <button type="button" onClick={handleForgotPassword}
+                  className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">{t('login.forgotPassword')}</button>
+              </div>
+              <button type="submit" disabled={loading}
+                className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-blue-500 dark:hover:bg-blue-600">
+                {loading ? (<span className="flex items-center justify-center gap-2"><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>{t('login.loggingIn')}</span>) : t('login.loginButton')}
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </div>
