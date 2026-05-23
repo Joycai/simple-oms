@@ -20,11 +20,16 @@ export default function PasskeysPage() {
   useEffect(() => { load() }, [])
 
   async function load() {
-    const res = await apiFetch('/auth/webauthn/credentials', {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    if (res.ok) setCreds(await res.json())
-    setLoading(false)
+    try {
+      const res = await apiFetch('/auth/webauthn/credentials', {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (res.ok) setCreds(await res.json())
+    } catch (e) {
+      console.error('Failed to load credentials', e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function register() {
@@ -32,7 +37,7 @@ export default function PasskeysPage() {
     try {
       const token = getToken()
       // Step 1: get options
-      const startRes = await apiFetch('/auth/webauthn/register/start', {    
+      const startRes = await apiFetch('/auth/webauthn/register/start', {        
         method: 'POST', headers: { Authorization: `Bearer ${token}` },
       })
       const options = await startRes.json()
@@ -41,7 +46,7 @@ export default function PasskeysPage() {
       const credential = await startRegistration(options)
 
       // Step 3: send back
-      const finishRes = await apiFetch('/auth/webauthn/register/finish', {  
+      const finishRes = await apiFetch('/auth/webauthn/register/finish', {      
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ credential, deviceName: deviceName || 'Default Device' }),
@@ -49,19 +54,30 @@ export default function PasskeysPage() {
       const data = await finishRes.json()
       if (!finishRes.ok) { setError(data.message || t('passkeys.error')); return }
       setDeviceName('')
-      setMsg(t('passkeys.success'))      
+      setMsg(t('passkeys.success'))
       setTimeout(() => setMsg(''), 2000)
       load()
     } catch (e: any) {
+      if (e.name === 'NotAllowedError') return // User cancelled
       setError(e.message || t('passkeys.error'))
     } finally { setRegistering(false) }
   }
 
   async function remove(id: number) {
-    await apiFetch(`/auth/webauthn/credentials/${id}`, {
-      method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` },     
-    })
-    load()
+    setError(''); setMsg('')
+    try {
+      const res = await apiFetch(`/auth/webauthn/credentials/${id}`, {
+        method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` },     
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.message || t('passkeys.error'))
+      } else {
+        load()
+      }
+    } catch (e: any) {
+      setError(e.message || t('passkeys.error'))
+    }
   }
 
   return (
@@ -85,7 +101,7 @@ export default function PasskeysPage() {
               className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50" />
             <button onClick={register} disabled={registering}
               className="mt-3 rounded-lg bg-indigo-950 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-900 disabled:opacity-60">
-              {registering ? '...' : t('passkeys.registerButton')}    
+              {registering ? '...' : t('passkeys.registerButton')}
             </button>
           </div>
 
@@ -104,7 +120,7 @@ export default function PasskeysPage() {
                       </div>
                     </div>
                     <button onClick={() => remove(c.id)}
-                      className="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">{t('passkeys.remove')}</button>
+                      className="text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">{t('passkeys.remove')}</button> 
                   </div>
                 ))}
               </div>

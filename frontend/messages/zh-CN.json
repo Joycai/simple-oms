@@ -18,8 +18,7 @@
                   "passkeyPrompt":  "请使用指纹或面部解锁...",
                   "usePassword":  "使用密码登录",
                   "switchAccount":  "切换账号",
-                  "usePasswordLogin":  "使用密码登录",
-                  "usePasskeyLogin":  "通行密钥登录"
+                  "cancelled":  "已取消"
               },
     "dashboard":  {
                       "title":  "控制台",

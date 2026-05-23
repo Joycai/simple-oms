@@ -23,7 +23,7 @@ function EyeIcon({ open }: { open: boolean }) {
 }
 
 export default function LoginPage() {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const router = useRouter()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -36,7 +36,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const msg = sessionStorage.getItem('login_message')
-    if (msg) { setInfo(msg); sessionStorage.removeItem('login_message') }
+    if (msg) { setInfo(msg); sessionStorage.removeItem('login_message') }       
   }, [])
 
   // Step 1: check username → find available methods
@@ -44,7 +44,7 @@ export default function LoginPage() {
     e.preventDefault(); setError(''); setLoading(true)
     try {
       const res = await apiFetch('/auth/login/check', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },        
         body: JSON.stringify({ username: username.trim() }),
       })
       const data = await res.json()
@@ -52,7 +52,7 @@ export default function LoginPage() {
       if (data.methods?.includes('passkey')) {
         setHasPasskey(true)
         setStep('passkey')
-        handlePasskeyLogin()
+        await handlePasskeyLogin()
         return
       }
       // No passkey → show password
@@ -98,6 +98,7 @@ export default function LoginPage() {
         router.replace('/login/otp')
         return
       }
+      // Security: password should not persist in memory longer than needed
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
       if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
@@ -113,14 +114,14 @@ export default function LoginPage() {
     setError(''); setLoading(true)
     try {
       const startRes = await apiFetch('/auth/webauthn/login/start', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },        
         body: JSON.stringify({ username: username.trim() }),
       })
       const options = await startRes.json()
       const credential = await startAuthentication(options)
       const finishRes = await apiFetch('/auth/webauthn/login/finish', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ credential, username: username.trim() }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },        
+        body: JSON.stringify({ credential, username: username.trim() }),        
       })
       const data = await finishRes.json()
       if (!finishRes.ok) { setError(data.message || t('login.loginFailed')); setStep('password'); return }
@@ -186,7 +187,7 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">
                 {t('login.title')}
               </h1>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">   
                 {t('login.subtitle')}
               </p>
             </div>
@@ -210,7 +211,7 @@ export default function LoginPage() {
             {step === 'username' ? (
               <form onSubmit={checkAndNext} className="space-y-4">
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.username')}</label>
+                  <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.username')}</label>       
                   <input id="username" type="text" value={username}
                     onChange={(e) => setUsername(e.target.value)} placeholder={t('login.usernamePlaceholder')}
                     className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder-slate-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20"
@@ -228,7 +229,7 @@ export default function LoginPage() {
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mx-auto text-indigo-600"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
                   <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">{t('login.passkeyLogin')}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {loading ? t('login.passkeyPrompt') : (locale === 'zh-CN' ? '已取消' : 'Cancelled')}
+                    {loading ? t('login.passkeyPrompt') : t('login.cancelled')}
                   </p>
                 </div>
                 <button type="button" onClick={() => { setLoading(false); setStep('password') }}
@@ -248,7 +249,7 @@ export default function LoginPage() {
                   </label>
                 </div>
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.password')}</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">{t('login.password')}</label>       
                   <div className="relative">
                     <input id="password" type={showPassword ? 'text' : 'password'} value={password}
                       onChange={(e) => setPassword(e.target.value)} placeholder={t('login.passwordPlaceholder')}
@@ -262,7 +263,7 @@ export default function LoginPage() {
                 </div>
                 <div className="text-right">
                   <button type="button" onClick={handleForgotPassword}
-                    className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">{t('login.forgotPassword')}</button>
+                    className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">{t('login.forgotPassword')}</button>      
                 </div>
                 <button type="submit" disabled={loading}
                   className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
@@ -283,4 +284,3 @@ export default function LoginPage() {
     </GuestGuard>
   )
 }
-

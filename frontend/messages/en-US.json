@@ -18,8 +18,7 @@
                   "passkeyPrompt":  "Use fingerprint or face to unlock...",
                   "usePassword":  "Use Password Instead",
                   "switchAccount":  "Switch Account",
-                  "usePasswordLogin":  "Sign in with Password",
-                  "usePasskeyLogin":  "Sign in with Passkey"
+                  "cancelled":  "Cancelled"
               },
     "dashboard":  {
                       "title":  "Dashboard",
