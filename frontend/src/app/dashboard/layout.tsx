@@ -54,10 +54,9 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
     router.replace('/login')
   }
 
-  const visibleGroups = navGroups.filter(g => {
-    if (g.labelKey === 'nav.management' && !hasRole('admin')) return false
-    return true
-  })
+  const visibleGroups = mounted
+    ? navGroups.filter(g => g.labelKey !== 'nav.management' || hasRole('admin'))
+    : navGroups // During SSR, show all groups to match client
 
   return (
     <aside className={`flex flex-col border-r border-slate-200 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 ${collapsed ? 'w-16' : 'w-64'}`}>
