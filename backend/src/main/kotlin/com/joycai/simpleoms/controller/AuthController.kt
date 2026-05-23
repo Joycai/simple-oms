@@ -39,6 +39,26 @@ class AuthController(
         return ResponseEntity.ok(mapOf("id" to user.id, "username" to user.username, "email" to (user.email ?: "")))
     }
 
+    @PostMapping("/login/check")
+    fun checkLogin(@RequestBody body: Map<String, String>): ResponseEntity<Map<String, Any>> {
+        val username = body["username"] ?: return ResponseEntity.badRequest().body(mapOf("message" to "请输入用户名"))
+        val user = userRepository.findByUsername(username)
+        if (user == null) return ResponseEntity.ok(mapOf("exists" to false, "methods" to emptyList<String>()))
+
+        val methods = mutableListOf<String>()
+        val creds = webAuthn.listCredentials(username)
+        if (creds.isNotEmpty()) methods.add("passkey")
+        if (user.totpEnabled) methods.add("otp")
+        methods.add("password")
+        return ResponseEntity.ok(mapOf(
+            "exists" to true,
+            "methods" to methods,
+            "lastMethod" to (sessionStorageLastMethod(username) ?: methods.first()),
+        ))
+    }
+
+    private fun sessionStorageLastMethod(username: String): String? = null // client-side handled
+
     @PostMapping("/login")
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<*> {
         val user = userRepository.findByUsername(request.username) ?: throw authError()

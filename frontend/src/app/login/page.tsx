@@ -28,6 +28,8 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [step, setStep] = useState<'username' | 'password' | 'otp'>('username')
+  const [authMethods, setAuthMethods] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
@@ -36,6 +38,28 @@ export default function LoginPage() {
     const msg = sessionStorage.getItem('login_message')
     if (msg) { setInfo(msg); sessionStorage.removeItem('login_message') }
   }, [])
+
+  async function checkUsername(e: FormEvent) {
+    e.preventDefault(); setError(''); setLoading(true)
+    try {
+      const res = await apiFetch('/auth/login/check', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim() }),
+      })
+      const data = await res.json()
+      if (!data.exists) { setError(t('login.loginFailed')); return }
+      setAuthMethods(data.methods || ['password'])
+      const lastMethod = sessionStorage.getItem('last_login_method')
+      if (lastMethod && data.methods?.includes(lastMethod)) {
+        if (lastMethod === 'passkey') { handlePasskeyLogin(); return }
+      }
+      if (data.methods?.includes('passkey')) {
+        handlePasskeyLogin(); return
+      }
+      setStep('password')
+    } catch { setError(t('login.loginError')) }
+    finally { setLoading(false) }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
