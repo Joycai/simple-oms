@@ -14,7 +14,10 @@
     "passwordRequired": "Password is required",
     "loginFailed": "Invalid username or password",
     "loginError": "Login failed, please try again",
-    "passkeyLogin": "Sign in with Passkey"
+    "passkeyLogin": "Sign in with Passkey",
+    "passkeyPrompt": "Use fingerprint or face to unlock...",
+    "usePassword": "Use Password Instead",
+    "switchAccount": "Switch Account"
   },
   "dashboard": {
     "title": "Dashboard",

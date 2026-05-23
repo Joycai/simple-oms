@@ -227,16 +227,16 @@ export default function LoginPage() {
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mx-auto text-indigo-600"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" /></svg>
                   <p className="mt-3 text-sm font-medium text-slate-700 dark:text-slate-300">{t('login.passkeyLogin')}</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    {loading ? (locale === 'zh-CN' ? '请使用指纹/面部解锁...' : 'Use fingerprint/face to unlock...') : (locale === 'zh-CN' ? '已取消' : 'Cancelled')}
+                    {loading ? t('login.passkeyPrompt') : (locale === 'zh-CN' ? '已取消' : 'Cancelled')}
                   </p>
                 </div>
                 <button type="button" onClick={() => { setLoading(false); setStep('password') }}
                   className="w-full text-center text-xs text-blue-500 hover:text-blue-700">
-                  {locale === 'zh-CN' ? '使用密码登录' : 'Use Password Instead'}
+                  {t('login.usePassword')}
                 </button>
                 <button type="button" onClick={() => { setStep('username'); setPassword('') }}
                   className="w-full text-center text-xs text-slate-400 hover:text-slate-600">
-                  {locale === 'zh-CN' ? '切换账号' : 'Switch Account'}
+                  {t('login.switchAccount')}
                 </button>
               </div>
             ) : (
