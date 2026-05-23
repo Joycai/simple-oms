@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { getToken } from '@/lib/auth'
+import { getToken, apiFetch } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 import QRCode from 'qrcode'
 
@@ -29,8 +29,8 @@ export default function OtpSetupPage() {
   async function load() {
     const token = getToken(); const h = { Authorization: `Bearer ${token}` }
     const [meRes, codesRes] = await Promise.all([
-      fetch('/api/v1/auth/user/me', { headers: h }),
-      fetch('/api/v1/auth/otp/recovery-codes', { headers: h }),
+      apiFetch('/api/v1/auth/user/me', { headers: h }),
+      apiFetch('/api/v1/auth/otp/recovery-codes', { headers: h }),
     ])
     if (meRes.ok) {
       const me = await meRes.json()
@@ -40,7 +40,7 @@ export default function OtpSetupPage() {
         setLoading(false); return
       }
     }
-    const setupRes = await fetch('/api/v1/auth/otp/setup', { headers: h })
+    const setupRes = await apiFetch('/api/v1/auth/otp/setup', { headers: h })
     if (setupRes.ok) { const d = await setupRes.json(); setSecret(d.secret); setQrUrl(d.qrUrl) }
     setLoading(false)
   }
@@ -49,7 +49,7 @@ export default function OtpSetupPage() {
     setError(''); setMsg('')
     if (!code) { setError(l('请输入验证码', 'Enter code')); return }
     const token = getToken()
-    const res = await fetch('/api/v1/auth/otp/verify', {
+    const res = await apiFetch('/api/v1/auth/otp/verify', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ code, secret }),
     })
@@ -62,7 +62,7 @@ export default function OtpSetupPage() {
 
   async function regenerate() {
     const token = getToken()
-    const res = await fetch('/api/v1/auth/otp/regenerate-codes', { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+    const res = await apiFetch('/api/v1/auth/otp/regenerate-codes', { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
     if (res.ok) { const d = await res.json(); setRecoveryCodes(d.codes) }
   }
 

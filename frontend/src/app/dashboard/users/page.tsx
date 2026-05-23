@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { getToken, getUser } from '@/lib/auth'
+import { getToken, apiFetch, getUser } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 
 interface UserData {
@@ -41,8 +41,8 @@ export default function UsersPage() {
     const headers = { Authorization: `Bearer ${token}` }
     try {
       const [uRes, rRes] = await Promise.all([
-        fetch('/api/v1/admin/users', { headers }),
-        fetch('/api/v1/roles', { headers }),
+        apiFetch('/api/v1/admin/users', { headers }),
+        apiFetch('/api/v1/roles', { headers }),
       ])
       if (uRes.ok) setUsers(await uRes.json())
       if (rRes.ok) setRoles(await rRes.json())
@@ -52,7 +52,7 @@ export default function UsersPage() {
 
   async function toggleUser(id: number) {
     const token = getToken()
-    const res = await fetch(`/api/v1/admin/users/${id}/toggle`, {
+    const res = await apiFetch(`/api/v1/admin/users/${id}/toggle`, {
       method: 'PUT', headers: { Authorization: `Bearer ${token}` },
     })
     if (res.ok) {
@@ -64,7 +64,7 @@ export default function UsersPage() {
   async function saveRoles() {
     if (!editingUser) return
     const token = getToken()
-    await fetch(`/api/v1/admin/users/${editingUser.id}/roles`, {
+    await apiFetch(`/api/v1/admin/users/${editingUser.id}/roles`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ roleIds: selectedRoles }),
@@ -89,7 +89,7 @@ export default function UsersPage() {
     }
     setCreateLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      const res = await apiFetch('/api/v1/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUsername.trim(), password: newPassword, email: newEmail.trim() || null }),
       })
@@ -99,7 +99,7 @@ export default function UsersPage() {
       const userId = data.id
       if (createRoles.length > 0 && userId) {
         const token = getToken()
-        await fetch(`/api/v1/admin/users/${userId}/roles`, {
+        await apiFetch(`/api/v1/admin/users/${userId}/roles`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ roleIds: createRoles }),
         })
@@ -115,7 +115,7 @@ export default function UsersPage() {
   async function doResetPassword() {
     if (!resetUser || resetPwd.length < 6) { setResetError(locale === 'zh-CN' ? '密码至少6位' : 'Min 6 chars'); return }
     if (resetPwd !== resetConfirm) { setResetError(locale === 'zh-CN' ? '两次密码不一致' : 'Passwords do not match'); return }
-    const res = await fetch(`/api/v1/admin/users/${resetUser.id}/reset-password`, {
+    const res = await apiFetch(`/api/v1/admin/users/${resetUser.id}/reset-password`, {
       method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ newPassword: resetPwd }),
     })

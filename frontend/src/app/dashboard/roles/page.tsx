@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { getToken } from '@/lib/auth'
+import { getToken, apiFetch } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 
 interface RoleData { id: number; name: string; description: string; permissionCount: number; userCount: number }
@@ -20,7 +20,7 @@ export default function RolesPage() {
   useEffect(() => { loadRoles() }, [])
 
   async function loadRoles() {
-    const res = await fetch('/api/v1/roles', { headers: { Authorization: `Bearer ${getToken()}` } })
+    const res = await apiFetch('/api/v1/roles', { headers: { Authorization: `Bearer ${getToken()}` } })
     if (res.ok) setRoles(await res.json())
     setLoading(false)
   }
@@ -42,7 +42,7 @@ export default function RolesPage() {
   }
 
   async function deleteRole(id: number) {
-    await fetch(`/api/v1/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } })
+    await apiFetch(`/api/v1/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${getToken()}` } })
     loadRoles()
   }
 

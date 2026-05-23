@@ -3,7 +3,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth } from '@/lib/auth'
+import { setAuth, apiFetch } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -51,7 +51,7 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await apiFetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
