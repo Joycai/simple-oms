@@ -42,7 +42,7 @@ export default function LoginPage() {
   async function checkUsername(e: FormEvent) {
     e.preventDefault(); setError(''); setLoading(true)
     try {
-      const res = await apiFetch('/auth/login/check', {
+      const res = await fetch('/api/v1/auth/login/check', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim() }),
       })
