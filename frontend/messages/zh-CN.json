@@ -81,5 +81,17 @@
     "language":  {
                      "switch":  "English",
                      "label":  "语言"
+                 },
+    "passkeys":  {
+                     "registerButton":  "注册新设备",
+                     "lastUsed":  "上次使用: ",
+                     "deviceNamePlaceholder":  "设备名称 (如: 我的 MacBook)",
+                     "subtitle":  "使用指纹、面部或 PIN 码快速登录",
+                     "registeredDevices":  "已注册设备",
+                     "success":  "通行密钥已注册",
+                     "created":  "创建: ",
+                     "remove":  "删除",
+                     "title":  "通行密钥 (Passkey)",
+                     "error":  "注册失败"
                  }
 }

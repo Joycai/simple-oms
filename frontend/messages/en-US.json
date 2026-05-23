@@ -81,5 +81,17 @@
     "language":  {
                      "switch":  "中文",
                      "label":  "Language"
+                 },
+    "passkeys":  {
+                     "registerButton":  "Register New Device",
+                     "lastUsed":  "Last used: ",
+                     "deviceNamePlaceholder":  "Device name (e.g. My MacBook)",
+                     "subtitle":  "Sign in with fingerprint, face, or PIN",
+                     "registeredDevices":  "Registered Devices",
+                     "success":  "Passkey registered",
+                     "created":  "Created: ",
+                     "remove":  "Remove",
+                     "title":  "Passkeys",
+                     "error":  "Registration failed"
                  }
 }

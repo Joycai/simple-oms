@@ -244,7 +244,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{username}
-                    <button type="button" onClick={() => { setStep('username'); setPassword('') }} className="ml-2 text-xs text-blue-500 hover:text-blue-700">{'切换'}</button>
+                    <button type="button" onClick={() => { setStep('username'); setPassword('') }} className="ml-2 text-xs text-blue-500 hover:text-blue-700">{t('login.switchAccount')}</button>
                   </label>
                 </div>
                 <div>
