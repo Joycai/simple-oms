@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
-import { logout, getUser } from '@/lib/auth'
+import { logout, getUser, hasRole } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
 const navGroups = [
@@ -54,6 +54,11 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
     router.replace('/login')
   }
 
+  const visibleGroups = navGroups.filter(g => {
+    if (g.labelKey === 'nav.management' && !hasRole('admin')) return false
+    return true
+  })
+
   return (
     <aside className={`flex flex-col border-r border-slate-200 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 ${collapsed ? 'w-16' : 'w-64'}`}>
       <div className="flex h-14 items-center border-b border-slate-200 px-4 dark:border-slate-800">
@@ -62,7 +67,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
       </div>
 
       <nav className="flex-1 space-y-0.5 px-2 py-3">
-        {navGroups.map((group, gi) => (
+        {visibleGroups.map((group, gi) => (
           <div key={group.labelKey}>
             {!collapsed && (
               <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -107,6 +112,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [collapsed, setCollapsed] = useState(false)
   const { locale } = useI18n()
   const pathname = usePathname()
+  const router = useRouter()
+
+  // Guard admin routes
+  useEffect(() => {
+    const adminPaths = ['/dashboard/users', '/dashboard/roles', '/dashboard/permissions']
+    if (adminPaths.some(p => pathname.startsWith(p)) && !hasRole('admin')) {
+      router.replace('/dashboard')
+    }
+  }, [pathname, router])
   const allItems = navGroups.flatMap(g => g.items)
   const activeItem = allItems.find((n: { href: string | null }) => n.href === pathname)
   const pageTitle = activeItem ? (locale === 'zh-CN' ? activeItem.labelZh : activeItem.labelEn) : ''

@@ -34,6 +34,19 @@ export function isAuthenticated(): boolean {
   return getToken() !== null
 }
 
+export function getRoles(): string[] {
+  const token = getToken()
+  if (!token) return []
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.roles || []
+  } catch { return [] }
+}
+
+export function hasRole(role: string): boolean {
+  return getRoles().includes(role)
+}
+
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
