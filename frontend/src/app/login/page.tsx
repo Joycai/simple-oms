@@ -97,25 +97,6 @@ export default function LoginPage() {
         router.replace('/login/otp')
         return
       }
-      // Passkey required
-      if (data.requiresPasskey) {
-        try {
-          const credential = await startAuthentication(data)
-          const finishRes = await fetch('/api/v1/auth/webauthn/login/finish', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ credential, username: username.trim() }),
-          })
-          const fData = await finishRes.json()
-          if (!finishRes.ok) { setError(fData.message || t('login.loginFailed')); return }
-          setAuth(fData.accessToken, fData.refreshToken, fData.username)
-          const redirect = sessionStorage.getItem('login_redirect')
-          if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
-          else router.replace('/dashboard')
-        } catch (e: any) {
-          setError(e.message || t('login.loginError'))
-        } finally { setLoading(false) }
-        return
-      }
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
       if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
