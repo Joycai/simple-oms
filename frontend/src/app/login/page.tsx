@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth } from '@/lib/auth'
+import { setAuth, apiFetch } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -29,6 +29,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+
+  useEffect(() => {
+    const msg = sessionStorage.getItem('login_message')
+    if (msg) { setInfo(msg); sessionStorage.removeItem('login_message') }
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -45,7 +51,7 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/login', {
+      const res = await apiFetch('/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: username.trim(), password }),
@@ -66,7 +72,9 @@ export default function LoginPage() {
         return
       }
       setAuth(data.accessToken, data.refreshToken, data.username)
-      router.replace('/dashboard')
+      const redirect = sessionStorage.getItem('login_redirect')
+      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      else router.replace('/dashboard')
     } catch {
       setError(t('login.loginError'))
     } finally {
@@ -137,6 +145,11 @@ export default function LoginPage() {
               {t('login.subtitle')}
             </p>
 
+            {info && (
+              <div className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/50 dark:text-amber-400">
+                {info}
+              </div>
+            )}
             {error && (
               <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">
                 {error}

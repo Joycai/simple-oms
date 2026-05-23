@@ -34,6 +34,19 @@ export function isAuthenticated(): boolean {
   return getToken() !== null
 }
 
+export function getRoles(): string[] {
+  const token = getToken()
+  if (!token) return []
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.roles || []
+  } catch { return [] }
+}
+
+export function hasRole(role: string): boolean {
+  return getRoles().includes(role)
+}
+
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
@@ -62,7 +75,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
   }
   let res = await fetch(`${API_BASE}${path}`, { ...options, headers })
-  // On 401, try refresh once
+  // On 401/403, try refresh once
   if (res.status === 401 || res.status === 403) {
     const refreshed = await tryRefreshToken()
     if (refreshed) {
@@ -71,6 +84,15 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
         (headers as Record<string, string>)['Authorization'] = `Bearer ${newToken}`
       }
       res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+    } else {
+      // Token expired, redirect to login
+      clearAuth()
+      window.dispatchEvent(new Event('auth-expired'))
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        sessionStorage.setItem('login_message', '登录已过期，请重新登录')
+        sessionStorage.setItem('login_redirect', window.location.pathname)
+        window.location.href = '/login'
+      }
     }
   }
   return res

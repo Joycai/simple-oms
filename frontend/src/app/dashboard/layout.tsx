@@ -1,17 +1,17 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
-import { logout, getUser } from '@/lib/auth'
+import { logout, getUser, hasRole } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 
 const navGroups = [
   {
     labelKey: 'nav.overview',
     items: [
-      { key: 'home', href: '/dashboard' as string | null, labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
+      { key: 'home', href: '/dashboard', labelZh: '首页', labelEn: 'Home', icon: HomeIcon },
     ],
   },
   {
@@ -45,14 +45,24 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
   const pathname = usePathname()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
-  const username = getUser() || 'User'
+  const [username, setUsername] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => {
+    setMounted(true)
+    setUsername(getUser() || 'User')
+    setIsAdmin(hasRole('admin'))
+  }, [])
 
   async function handleLogout() {
     await logout()
     router.replace('/login')
   }
+
+  // Filter groups only after mount to prevent hydration mismatch
+  const visibleGroups = mounted
+    ? navGroups.filter(g => g.labelKey !== 'nav.management' || isAdmin)
+    : navGroups
 
   return (
     <aside className={`flex flex-col border-r border-slate-200 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-950 ${collapsed ? 'w-16' : 'w-64'}`}>
@@ -62,7 +72,7 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
       </div>
 
       <nav className="flex-1 space-y-0.5 px-2 py-3">
-        {navGroups.map((group, gi) => (
+        {visibleGroups.map((group, gi) => (
           <div key={group.labelKey}>
             {!collapsed && (
               <div className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
@@ -79,9 +89,12 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
                     : item.href ? 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
                     : 'text-slate-400 cursor-default'
                 } ${collapsed ? 'justify-center' : ''}`
+                
+                if (!mounted && group.labelKey === 'nav.management') return null
+
                 return item.href
                   ? <Link key={item.key} href={item.href} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</Link>
-                  : <span key={item.key} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</span>
+                  : <span key={item.key} className={cls} title={collapsed ? (locale === 'zh-CN' ? item.labelZh : item.labelEn) : undefined}>{inner}</span>      
               })}
             </div>
           </div>
@@ -90,9 +103,12 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
 
       <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-800">
         <LanguageToggle />
-        {!collapsed && mounted && <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-          <div className="h-6 w-6 rounded-full bg-slate-300 dark:bg-slate-700" />{username}
-        </div>}
+        {!collapsed && mounted && (
+          <div className="mt-2 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <div className="h-6 w-6 rounded-full bg-slate-300 dark:bg-slate-700" />
+            {username}
+          </div>
+        )}
         <button onClick={handleLogout}
           className={`mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-slate-500 hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-950 dark:hover:text-red-400 ${collapsed ? 'justify-center' : ''}`}
           title={collapsed ? '退出' : undefined}>
@@ -105,11 +121,29 @@ function Sidebar({ collapsed }: { collapsed: boolean }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const { locale } = useI18n()
   const pathname = usePathname()
-  const allItems = navGroups.flatMap(g => g.items)
-  const activeItem = allItems.find((n: { href: string | null }) => n.href === pathname)
+  const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+    const admin = hasRole('admin')
+    setIsAdmin(admin)
+    
+    const adminPaths = ['/dashboard/users', '/dashboard/roles', '/dashboard/permissions']
+    if (adminPaths.some(p => pathname.startsWith(p)) && !admin) {    
+      router.replace('/dashboard')
+    }
+  }, [pathname, router])
+
+  const allItems = navGroups.flatMap(g => g.items as Array<{key: string; href: string | null; labelZh: string; labelEn: string; icon: () => React.JSX.Element}>)
+  const activeItem = allItems.find((n) => n.href === pathname)
   const pageTitle = activeItem ? (locale === 'zh-CN' ? activeItem.labelZh : activeItem.labelEn) : ''
+
+  const adminPaths = ['/dashboard/users', '/dashboard/roles', '/dashboard/permissions']
+  const isCurrentAdminPath = adminPaths.some(p => pathname.startsWith(p))
 
   return (
     <div className="flex h-screen">
@@ -118,14 +152,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-950">
           <button onClick={() => setCollapsed(!collapsed)}
             className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">     
               <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
           <h1 className="text-sm font-medium text-slate-700 dark:text-slate-300">{pageTitle}</h1>
         </header>
         <main className="flex-1 overflow-auto bg-slate-50 p-6 dark:bg-slate-950">
-          {children}
+          {/* Prevent showing admin content before auth check is verified on client */}
+          {isCurrentAdminPath && !isAdmin && mounted ? null : children}
         </main>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { getToken, clearAuth, getUser } from '@/lib/auth'
+import { getToken, apiFetch, clearAuth, getUser } from '@/lib/auth'
 import { AuthGuard } from '@/components/AuthGuard'
 
 export default function SettingsPage() {
@@ -24,7 +24,7 @@ export default function SettingsPage() {
     setLoading(true)
     try {
       const token = getToken()
-      const res = await fetch('/api/v1/auth/change-password', {
+      const res = await apiFetch('/auth/change-password', {
         method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ oldPassword: oldPw, newPassword: newPw }),
       })

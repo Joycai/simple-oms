@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/auth'
 
 import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
@@ -42,7 +43,7 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/register', {
+      const res = await apiFetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

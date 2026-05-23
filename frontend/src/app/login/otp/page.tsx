@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth } from '@/lib/auth'
+import { setAuth, apiFetch } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -28,7 +28,7 @@ export default function OtpLoginPage() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/login/otp', {
+      const res = await apiFetch('/auth/login/otp', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, otpCode: code.trim() }),
       })
@@ -37,7 +37,9 @@ export default function OtpLoginPage() {
       sessionStorage.removeItem('otp_login_username')
       sessionStorage.removeItem('otp_login_password')
       setAuth(data.accessToken, data.refreshToken, data.username)
-      router.replace('/dashboard')
+      const redirect = sessionStorage.getItem('login_redirect')
+      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      else router.replace('/dashboard')
     } catch { setError(locale === 'zh-CN' ? '请求失败' : 'Request failed') }
     finally { setLoading(false) }
   }
