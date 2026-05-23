@@ -62,7 +62,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
   }
   let res = await fetch(`${API_BASE}${path}`, { ...options, headers })
-  // On 401, try refresh once
+  // On 401/403, try refresh once
   if (res.status === 401 || res.status === 403) {
     const refreshed = await tryRefreshToken()
     if (refreshed) {
@@ -71,6 +71,14 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
         (headers as Record<string, string>)['Authorization'] = `Bearer ${newToken}`
       }
       res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+    } else {
+      // Token expired, redirect to login
+      clearAuth()
+      window.dispatchEvent(new Event('auth-expired'))
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+        sessionStorage.setItem('login_message', '登录已过期，请重新登录')
+        window.location.href = '/login'
+      }
     }
   }
   return res
