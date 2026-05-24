@@ -103,15 +103,25 @@ class DataInitializer {
             adminRole.permissions.addAll(permissionRepository.findAll())
             roleRepository.save(adminRole)
         }
-        if (!roleRepository.existsByName("buyer")) {
-            val buyerRole = roleRepository.save(Role(name = "buyer", description = "买家"))
+        val buyerRole = if (!roleRepository.existsByName("buyer")) {
+            roleRepository.save(Role(name = "buyer", description = "买家"))
+        } else {
+            roleRepository.findByName("buyer")
+        }
+        if (buyerRole != null) {
+            buyerRole.permissions.clear()
             listOf("order:order:create", "order:order:read").forEach { code ->
                 permissionRepository.findByCode(code)?.let { buyerRole.permissions.add(it) }
             }
             roleRepository.save(buyerRole)
         }
-        if (!roleRepository.existsByName("seller")) {
-            val sellerRole = roleRepository.save(Role(name = "seller", description = "卖家"))
+        val sellerRole = if (!roleRepository.existsByName("seller")) {
+            roleRepository.save(Role(name = "seller", description = "卖家"))
+        } else {
+            roleRepository.findByName("seller")
+        }
+        if (sellerRole != null) {
+            sellerRole.permissions.clear()
             listOf("order:order:read", "order:order:update", "order:order:cancel", "order:shipment:manage", "iam:category:manage").forEach { code ->
                 permissionRepository.findByCode(code)?.let { sellerRole.permissions.add(it) }
             }
@@ -142,17 +152,20 @@ class DataInitializer {
             userRepository.save(admin)
         }
 
-        // Ensure buyer user exists
-        if (!userRepository.existsByUsername("buyer")) {
-            val buyer = User(username = "buyer", password = passwordEncoder.encode("buyer123")!!)
-            if (buyerRole != null) buyer.roles.add(buyerRole)
-            userRepository.save(buyer)
+        // Ensure test users exist
+        listOf("buyer", "buyer1").forEach { uname ->
+            if (!userRepository.existsByUsername(uname)) {
+                val user = User(username = uname, password = passwordEncoder.encode(uname + "123")!!)
+                if (buyerRole != null) user.roles.add(buyerRole)
+                userRepository.save(user)
+            }
         }
-        // Ensure seller user exists
-        if (!userRepository.existsByUsername("seller")) {
-            val seller = User(username = "seller", password = passwordEncoder.encode("seller123")!!)
-            if (sellerRole != null) seller.roles.add(sellerRole)
-            userRepository.save(seller)
+        listOf("seller", "seller1").forEach { uname ->
+            if (!userRepository.existsByUsername(uname)) {
+                val user = User(username = uname, password = passwordEncoder.encode(uname + "123")!!)
+                if (sellerRole != null) user.roles.add(sellerRole)
+                userRepository.save(user)
+            }
         }
     }
 }
