@@ -47,6 +47,17 @@ class DataInitializer {
     @Bean
     @Order(1)
     fun seedPermissions(permissionRepository: PermissionRepository) = CommandLineRunner {
+        // Clean up old-format permissions (two-segment codes from before IAM refactoring)
+        val oldCodes = listOf(
+            "user:read", "user:write", "user:delete",
+            "role:read", "role:write", "role:delete",
+            "order:read", "order:write", "order:delete",
+            "inventory:read", "inventory:write", "report:read",
+        )
+        oldCodes.forEach { code ->
+            permissionRepository.findByCode(code)?.let { permissionRepository.delete(it) }
+        }
+
         val permissions = listOf(
             "iam:user:create" to ("IAM" to "创建用户"),
             "iam:user:read" to ("IAM" to "查看用户"),
@@ -80,8 +91,14 @@ class DataInitializer {
     @Bean
     @Order(2)
     fun seedRoles(roleRepository: RoleRepository, permissionRepository: PermissionRepository) = CommandLineRunner {
-        if (!roleRepository.existsByName("admin")) {
-            val adminRole = roleRepository.save(Role(name = "admin", description = "系统管理员"))
+        val adminRole = if (!roleRepository.existsByName("admin")) {
+            roleRepository.save(Role(name = "admin", description = "系统管理员"))
+        } else {
+            roleRepository.findByName("admin")
+        }
+        // Always refresh admin role permissions (handles cleanup of stale refs)
+        if (adminRole != null) {
+            adminRole.permissions.clear()
             adminRole.permissions.addAll(permissionRepository.findAll())
             roleRepository.save(adminRole)
         }
