@@ -3,6 +3,7 @@ package com.joycai.iam.client.autoconfigure
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.web.client.RestTemplate
 import java.math.BigInteger
