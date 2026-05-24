@@ -120,6 +120,30 @@ export async function markPaid(orderId: number) {
   return safeJson(res)
 }
 
+export async function fetchItemImages(itemId: number) {
+  const res = await orderFetch(`/items/${itemId}/images`)
+  return safeJson(res)
+}
+
+export async function uploadItemImage(itemId: number, data: string) {
+  const res = await orderFetch(`/seller/items/${itemId}/images`, {
+    method: 'POST',
+    body: JSON.stringify({ data }),
+  })
+  return safeJson(res)
+}
+
+export async function deleteItemImage(itemId: number, imageId: number) {
+  await orderFetch(`/seller/items/${itemId}/images/${imageId}`, { method: 'DELETE' })
+}
+
+export async function reorderItemImages(itemId: number, ids: number[]) {
+  await orderFetch(`/seller/items/${itemId}/images/reorder`, {
+    method: 'PUT',
+    body: JSON.stringify({ ids }),
+  })
+}
+
 export async function shipOrder(orderId: number, trackingNumber: string) {
   const res = await orderFetch(`/seller/orders/${orderId}/ship`, {
     method: 'POST',
