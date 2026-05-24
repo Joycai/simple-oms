@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { gql, useQuery } from '@apollo/client'
@@ -53,13 +53,13 @@ function StorefrontContent() {
   })
 
   const items = (data?.items || []) as any[]
-  const categories = (data?.categories || []) as any[]
+  const categoryList = (data?.categories || []) as any[]
 
-  const allCats = categories.flatMap((c: any) => [c, ...(c.children || [])])
+  const allCats = categoryList.flatMap((c: any) => [c, ...(c.children || [])])
   const activeCat = categoryId ? allCats.find((c: any) => c?.id === Number(categoryId)) : null
   
   // Find L1 for breadcrumb if activeCat is L2
-  const parentCat = activeCat?.parentId ? categories.find(c => c.id === activeCat.parentId) : null
+  const parentCat = activeCat?.parentId ? categoryList.find(c => c.id === activeCat.parentId) : null
 
   return (
     <div className="space-y-8">
@@ -109,7 +109,7 @@ function StorefrontContent() {
           }`}>
             {t('orderService.storefront.all')}
           </Link>
-          {categories.map(cat => {
+          {categoryList.map(cat => {
             const active = categoryId === cat.id.toString() || (activeCat?.parentId === cat.id)
             return (
               <Link key={cat.id} href={`/?categoryId=${cat.id}`}
@@ -144,8 +144,8 @@ function StorefrontContent() {
           <Link href="/" className="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-700">Clear all filters</Link>
         </div>
       )}
-        </div>{/* close flex-1 */}
-      </div>{/* close flex with sidebar */}
+        </div>
+      </div>
     </div>
   )
 }
