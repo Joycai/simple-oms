@@ -15,16 +15,46 @@ const statusColors: Record<string, string> = {
 export default function BuyerAccountPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
-  useEffect(() => {
-    fetchBuyerOrders().then(setOrders).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  useEffect(() => { load() }, [statusFilter, dateFrom, dateTo])
+
+  async function load() {
+    try {
+      const params = new URLSearchParams()
+      if (statusFilter) params.set('status', statusFilter)
+      if (dateFrom) params.set('dateFrom', new Date(dateFrom).toISOString())
+      if (dateTo) params.set('dateTo', new Date(dateTo + 'T23:59:59').toISOString())
+      const res = await fetch(`${process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:8081/api/v1'}/orders?${params}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      })
+      setOrders(await res.json())
+    } finally { setLoading(false) }
+  }
 
   if (loading) return <div className="py-20 text-center text-slate-400">Loading...</div>
 
   return (
     <div>
       <h1 className="mb-6 font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">My Orders</h1>
+
+      <div className="mb-4 flex flex-wrap gap-3">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+          <option value="">All Status</option>
+          <option value="PENDING_PAYMENT">Pending Payment</option>
+          <option value="PAID">Paid</option>
+          <option value="SHIPPING">Shipping</option>
+          <option value="DELIVERED">Delivered</option>
+        </select>
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+        <span className="text-sm text-slate-500 self-center">to</span>
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+      </div>
       {orders.length === 0 ? (
         <div className="rounded-xl border bg-white p-12 text-center text-slate-400 dark:bg-slate-900 dark:border-slate-800">
           No orders yet. <Link href="/" className="text-indigo-600 hover:underline">Start shopping</Link>
