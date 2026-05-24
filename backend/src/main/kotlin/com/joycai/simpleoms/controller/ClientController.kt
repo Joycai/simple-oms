@@ -41,7 +41,7 @@ class ClientController(
         val saved = clientApplicationRepository.save(
             ClientApplication(
                 clientId = clientId,
-                clientSecret = passwordEncoder.encode(secret),
+                clientSecret = passwordEncoder.encode(secret)!!,
                 name = body["name"] ?: clientId,
                 redirectUris = body["redirectUris"],
                 scopes = body["scopes"],

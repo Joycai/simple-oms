@@ -3,6 +3,9 @@ webauthn:
   rp-name: simple-oms
   origin: http://localhost:3200
 
+cors:
+  allowed-origins: http://localhost:3200
+
 jwt:
   access-expiration-ms: 900000
   refresh-expiration-ms: 604800000

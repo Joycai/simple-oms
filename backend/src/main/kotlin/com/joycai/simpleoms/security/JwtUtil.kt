@@ -42,25 +42,27 @@ class JwtUtil(
         return KeyFactory.getInstance("EC").generatePublic(X509EncodedKeySpec(bytes))
     }
 
-    fun generateAccessToken(username: String, roles: List<String>): String {
+    fun generateAccessToken(username: String, roles: List<String>, permissions: List<String> = emptyList()): String {
         val key = getActiveKey()
         return Jwts.builder()
             .header().keyId(key.kid).and()
             .subject(username)
             .claim("roles", roles)
+            .claim("permissions", permissions)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + accessExpirationMs))
             .signWith(parsePrivateKey(key.privateKeyPem))
             .compact()
     }
 
-    fun generateRefreshToken(username: String, roles: List<String>): Pair<String, String> {
+    fun generateRefreshToken(username: String, roles: List<String>, permissions: List<String> = emptyList()): Pair<String, String> {
         val tokenId = UUID.randomUUID().toString()
         val key = getActiveKey()
         val token = Jwts.builder()
             .header().keyId(key.kid).and()
             .subject(username)
             .claim("roles", roles)
+            .claim("permissions", permissions)
             .id(tokenId)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + refreshExpirationMs))

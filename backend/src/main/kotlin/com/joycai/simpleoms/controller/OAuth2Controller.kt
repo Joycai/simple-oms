@@ -33,8 +33,8 @@ class OAuth2Controller(
         val scopes = client.scopes?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
         val roles = listOf("service:${client.clientId}")
 
-        val accessToken = jwtUtil.generateAccessToken("service:${client.clientId}", roles + scopes)
-        val (_, refreshToken) = jwtUtil.generateRefreshToken("service:${client.clientId}", roles + scopes)
+        val accessToken = jwtUtil.generateAccessToken("service:${client.clientId}", roles, scopes)
+        val (_, refreshToken) = jwtUtil.generateRefreshToken("service:${client.clientId}", roles, scopes)
 
         return ResponseEntity.ok(mapOf(
             "access_token" to accessToken,

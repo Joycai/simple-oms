@@ -89,10 +89,14 @@ class AuthController(
         val username = jwtUtil.extractUsername(refreshToken)
         val roles = jwtUtil.extractRoles(refreshToken)
 
+        // Load fresh permissions from DB (roles may have changed since last token)
+        val user = userRepository.findByUsername(username)
+        val permissions = user?.let { userPermissions(it) } ?: emptyList()
+
         // Rotation: revoke old, issue new
         refreshTokenService.revoke(tokenId)
-        val newAccess = jwtUtil.generateAccessToken(username, roles)
-        val (newTokenId, newRefresh) = jwtUtil.generateRefreshToken(username, roles)
+        val newAccess = jwtUtil.generateAccessToken(username, roles, permissions)
+        val (newTokenId, newRefresh) = jwtUtil.generateRefreshToken(username, roles, permissions)
         refreshTokenService.store(newTokenId, username)
 
         return ResponseEntity.ok(mapOf(
@@ -204,8 +208,9 @@ class AuthController(
             ?: return ResponseEntity.badRequest().body(mapOf("message" to "Authentication failed"))
         val user = userRepository.findByUsername(resolved)!!
         val roles = user.roles.map { it.name }
-        val accessToken = jwtUtil.generateAccessToken(resolved, roles)
-        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(resolved, roles)
+        val permissions = userPermissions(user)
+        val accessToken = jwtUtil.generateAccessToken(resolved, roles, permissions)
+        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(resolved, roles, permissions)
         refreshTokenService.store(tokenId, resolved)
         return ResponseEntity.ok(mapOf(
             "accessToken" to accessToken,
@@ -225,11 +230,15 @@ class AuthController(
     }
 
     // token helpers
+    private fun userPermissions(user: User): List<String> =
+        user.roles.flatMap { it.permissions }.map { it.code }.distinct()
+
     private fun issueTokens(user: User): ResponseEntity<LoginResponse> {
         val userDetails = userDetailsService.loadUserByUsername(user.username)
         val roles = userDetails.authorities.mapNotNull { it.authority?.removePrefix("ROLE_") }
-        val accessToken = jwtUtil.generateAccessToken(user.username, roles)
-        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(user.username, roles)
+        val permissions = userPermissions(user)
+        val accessToken = jwtUtil.generateAccessToken(user.username, roles, permissions)
+        val (tokenId, refreshToken) = jwtUtil.generateRefreshToken(user.username, roles, permissions)
         refreshTokenService.store(tokenId, user.username)
         return ResponseEntity.ok(LoginResponse(accessToken = accessToken, refreshToken = refreshToken, username = user.username))
     }
