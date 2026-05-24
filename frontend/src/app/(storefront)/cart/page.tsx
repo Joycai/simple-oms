@@ -25,7 +25,7 @@ export default function CartPage() {
     try {
       const result = await checkout()
       if (result.message) { setError(result.message); return }
-      sessionStorage.setItem('cart_count', '0')
+      window.dispatchEvent(new CustomEvent('cart-updated'))
       router.push('/account')
     } catch (e: any) { setError(e.message || t('orderService.cart.checkoutFailed')) }
     finally { setLoading(false) }
@@ -61,7 +61,7 @@ export default function CartPage() {
                   <button onClick={async () => { await updateCartItem(ci.id, ci.quantity + 1); load() }}
                     className="rounded border px-2 py-0.5 text-sm">+</button>   
                 </div>
-                <button onClick={async () => { await removeCartItem(ci.id); load() }}
+                <button onClick={async () => { await removeCartItem(ci.id); load(); window.dispatchEvent(new CustomEvent('cart-updated')) }}
                   className="text-xs text-red-500 hover:text-red-700">{t('orderService.cart.remove')}</button>
               </div>
             ))}
