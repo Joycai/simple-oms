@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { I18nProvider } from "@/lib/i18n"
+import { ApolloWrapper } from "@/components/ApolloWrapper"
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -22,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-        <I18nProvider>{children}</I18nProvider>
+        <ApolloWrapper><I18nProvider>{children}</I18nProvider></ApolloWrapper>
       </body>
     </html>
   )
