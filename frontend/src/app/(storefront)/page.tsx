@@ -1,12 +1,22 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { fetchItems, fetchCategories } from '@/lib/order-api'
+import { gql, useQuery } from '@apollo/client'
 import { useI18n } from '@/lib/i18n'
 import { ItemCard } from '@/components/ItemCard'
 import { CategorySidebar } from '@/components/CategorySidebar'
+
+const GET_ITEMS = gql`
+  query GetItems($categoryId: ID, $keyword: String) {
+    items(categoryId: $categoryId, keyword: $keyword) {
+      id name price quantity brand location status thumbnail
+      category { id name parentId }
+    }
+    categories { id name parentId children { id name parentId } }
+  }
+`
 
 function SkeletonCard() {
   return (
@@ -41,22 +51,15 @@ function StorefrontContent() {
   const categoryId = searchParams.get('categoryId')
   const keyword = searchParams.get('keyword')
 
-  useEffect(() => {
-    fetchCategories().then(setCategories).catch(() => {})
-  }, [])
+  const { data, loading } = useQuery(GET_ITEMS, {
+    variables: { categoryId, keyword },
+  })
 
-  useEffect(() => {
-    setLoading(true)
-    const cid = categoryId ? Number(categoryId) : undefined
-    const kw = keyword || undefined
-    fetchItems({ categoryId: cid, keyword: kw })
-      .then(setItems)
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [categoryId, keyword])
+  const items = data?.items || []
+  const categories = data?.categories || []
 
-  const allCats = categories.flatMap(c => [c, ...(c.children || [])])
-  const activeCat = categoryId ? allCats.find(c => c?.id === Number(categoryId)) : null
+  const allCats = categories.flatMap((c: any) => [c, ...(c.children || [])])
+  const activeCat = categoryId ? allCats.find((c: any) => c?.id === Number(categoryId)) : null
   
   // Find L1 for breadcrumb if activeCat is L2
   const parentCat = activeCat?.parentId ? categories.find(c => c.id === activeCat.parentId) : null
