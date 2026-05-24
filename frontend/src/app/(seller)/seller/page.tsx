@@ -72,7 +72,7 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
       
       const savedId = isEdit ? item.id : data.id
 
-      // Upload only NEW images (skip existing ones already on server)
+      // Fix: Only upload NEW images that don't exist in existingUrls
       for (const b64 of images.previews) {
         if (!existingUrls.has(b64)) {
           await uploadItemImage(savedId, b64)
