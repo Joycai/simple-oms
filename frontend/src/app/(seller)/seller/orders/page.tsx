@@ -18,14 +18,14 @@ export default function SellerOrdersPage() {
 
   async function handleMarkPaid(id: number) {
     await markPaid(id)
-    load()
+    await load()
   }
 
   async function handleShip(id: number) {
     const tracking = prompt(t('orderService.seller.trackingPlaceholder'))
     if (tracking) {
       await shipOrder(id, tracking)
-      load()
+      await load()
     }
   }
 
