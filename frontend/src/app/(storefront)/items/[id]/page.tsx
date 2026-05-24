@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { fetchItem, addToCart } from '@/lib/order-api'
+import { fetchItem, addToCart, fetchItemImages } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 
 export default function ItemDetailPage() {
@@ -15,7 +15,12 @@ export default function ItemDetailPage() {
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
-    fetchItem(Number(id)).then(setItem).finally(() => setLoading(false))
+    Promise.all([
+      fetchItem(Number(id)),
+      fetchItemImages(Number(id)),
+    ]).then(([item, images]) => {
+      setItem({ ...item, images })
+    }).finally(() => setLoading(false))
   }, [id])
 
   async function handleAddToCart() {
@@ -36,8 +41,10 @@ export default function ItemDetailPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
-          Image Placeholder
+        <div className="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 overflow-hidden">
+          {item.images?.[0]?.data ? (
+            <img src={item.images[0].data} alt={item.name} className="h-full w-full object-cover" />
+          ) : 'Image Placeholder'}
         </div>
 
         <div>
