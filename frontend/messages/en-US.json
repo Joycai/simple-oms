@@ -109,7 +109,7 @@
                                          "confirmReceipt":  "Confirm Receipt",
                                          "status":  {
                                                         "shipped":  "Shipped",
-                                                        "shipping":  "Wait to Ship",
+                                                        "shipping":  "Shipped",
                                                         "delivered":  "Delivered",
                                                         "completed":  "Completed",
                                                         "cancelled":  "Cancelled",
