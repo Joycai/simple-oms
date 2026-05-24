@@ -6,8 +6,9 @@ import {
   fetchSellerItems, 
   fetchCategories, 
   fetchItemImages, 
-  uploadItemImage, 
-  orderFetch 
+  uploadItemImage,
+  deleteItemImage,
+  orderFetch
 } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 import { useImageUpload, ImageInput, ImageCropModal } from '@/components/ImageUploader'
@@ -28,12 +29,27 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const images = useImageUpload(5)
+  const existingIds = useRef<number[]>([]) // track server-side image IDs
   const existingCount = useRef(0)
+
+  async function handleRemoveImage(index: number) {
+    if (index < existingCount.current) {
+      // This is an existing image on the server — delete it
+      const imageId = existingIds.current[index]
+      if (imageId) {
+        await deleteItemImage(imageId)
+        existingIds.current.splice(index, 1)
+        existingCount.current--
+      }
+    }
+    images.remove(index)
+  }
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
     if (item) {
       fetchItemImages(item.id).then((list: any[]) => {
+        existingIds.current = list.map((img: any) => img.id)
         existingCount.current = list.length
         images.setPreviews(list.map((img: any) => img.data))
       }).catch(() => {})
@@ -184,7 +200,14 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
                   className="rounded-full bg-white/20 p-1 text-white hover:bg-white/40 disabled:opacity-30">&larr;</button>
                 <button type="button" onClick={() => images.moveDown(i)} disabled={i === images.previews.length - 1}
                   className="rounded-full bg-white/20 p-1 text-white hover:bg-white/40 disabled:opacity-30">&rarr;</button>
-                <button type="button" onClick={() => images.remove(i)}
+                <button type="button" onClick={async () => {
+                  if (i < existingCount.current && item?.id) {
+                    const imgs = await fetchItemImages(item.id)
+                    if (imgs[i]) await orderFetch(`/seller/item-images/${imgs[i].id}`, { method: 'DELETE' })
+                    existingCount.current--
+                  }
+                  handleRemoveImage(i)
+                }}
                   className="ml-1 rounded-full bg-red-500/80 p-1 text-white hover:bg-red-600">&times;</button>
               </div>
               {i === 0 && (

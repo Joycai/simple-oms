@@ -157,8 +157,8 @@ export async function uploadItemImage(itemId: number, data: string) {
   return safeJson(res)
 }
 
-export async function deleteItemImage(itemId: number, imageId: number) {
-  await orderFetch(`/seller/items/${itemId}/images/${imageId}`, { method: 'DELETE' })
+export async function deleteItemImage(imageId: number) {
+  await orderFetch(`/seller/item-images/${imageId}`, { method: 'DELETE' })
 }
 
 export async function reorderItemImages(itemId: number, ids: number[]) {
