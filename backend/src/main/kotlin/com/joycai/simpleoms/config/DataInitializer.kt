@@ -78,6 +78,7 @@ class DataInitializer {
             "order:order:update" to ("Order" to "编辑订单"),
             "order:order:cancel" to ("Order" to "取消订单"),
             "order:shipment:manage" to ("Order" to "物流管理"),
+            "iam:category:manage" to ("Order" to "品类管理"),
         )
         permissions.forEach { (code, groupName) ->
             if (permissionRepository.findByCode(code) == null) {
@@ -111,7 +112,7 @@ class DataInitializer {
         }
         if (!roleRepository.existsByName("seller")) {
             val sellerRole = roleRepository.save(Role(name = "seller", description = "卖家"))
-            listOf("order:order:read", "order:order:update", "order:order:cancel", "order:shipment:manage").forEach { code ->
+            listOf("order:order:read", "order:order:update", "order:order:cancel", "order:shipment:manage", "iam:category:manage").forEach { code ->
                 permissionRepository.findByCode(code)?.let { sellerRole.permissions.add(it) }
             }
             roleRepository.save(sellerRole)
