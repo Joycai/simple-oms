@@ -33,6 +33,13 @@ class IamAutoConfiguration(
     }
 
     @Bean
+    fun iamJwtFilterRegistration(filter: IamJwtAuthFilter): FilterRegistrationBean<IamJwtAuthFilter> {
+        val reg = FilterRegistrationBean(filter)
+        reg.isEnabled = false // prevent auto-registration; only registered in SecurityFilterChain
+        return reg
+    }
+
+    @Bean
     fun iamJwtAuthFilter(): IamJwtAuthFilter {
         // Retry JWKS fetch on startup (IAM might not be ready yet)
         for (attempt in 1..5) {
