@@ -1,11 +1,12 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { fetchItems, fetchCategories, fetchItemImages } from '@/lib/order-api'
+import { fetchItems, fetchCategories } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 import { ItemCard } from '@/components/ItemCard'
+import { CategorySidebar } from '@/components/CategorySidebar'
 
 function SkeletonCard() {
   return (
@@ -24,14 +25,6 @@ function SkeletonCard() {
 }
 
 export default function StorefrontPage() {
-  return (
-    <Suspense fallback={<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}</div>}>
-      <StorefrontContent />
-    </Suspense>
-  )
-}
-
-function StorefrontContent() {
   const { t } = useI18n()
   const searchParams = useSearchParams()
   const [items, setItems] = useState<any[]>([])
@@ -49,40 +42,19 @@ function StorefrontContent() {
     const cid = categoryId ? Number(categoryId) : undefined
     const kw = keyword || undefined
     fetchItems({ categoryId: cid, keyword: kw })
-      .then(async (list: any[]) => {
-        // Fetch first image for each item
-        const withImages = await Promise.all(list.map(async (item: any) => {
-          try {
-            const images = await fetchItemImages(item.id)
-            return { ...item, image: images[0]?.data || null }
-          } catch { return { ...item, image: null } }
-        }))
-        setItems(withImages)
-      })
+      .then(setItems)
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [categoryId, keyword])
 
-  const catName = categoryId
-    ? categories.flatMap(c => [c, ...(c.children || [])]).find(c => c?.id === Number(categoryId))?.name
-    : null
-
-  const catL1Id = categoryId
-    ? categories.find(c => (c.children || []).some((child: any) => child.id === Number(categoryId)))?.id
-    : null
-  const catL1Name = catL1Id ? categories.find(c => c.id === catL1Id)?.name : null
+  const allCats = categories.flatMap(c => [c, ...(c.children || [])])
+  const activeCat = categoryId ? allCats.find(c => c?.id === Number(categoryId)) : null
+  
+  // Find L1 for breadcrumb if activeCat is L2
+  const parentCat = activeCat?.parentId ? categories.find(c => c.id === activeCat.parentId) : null
 
   return (
     <div className="space-y-8">
-      {/* Breadcrumb */}
-      {(categoryId || keyword) && (
-        <nav className="flex items-center gap-1.5 text-sm text-slate-500">
-          <Link href="/" className="hover:text-indigo-600">Home</Link>
-          {catL1Name && catName && catL1Name !== catName && (<><span>/</span><Link href={`/?categoryId=${catL1Id}`} className="hover:text-indigo-600">{catL1Name}</Link></>)}
-          {catName && (<><span>/</span><span className="text-slate-900 dark:text-slate-300">{catName}</span></>)}
-          {keyword && (<><span>/</span><span className="text-slate-900 dark:text-slate-300">Search: {keyword}</span></>)}
-        </nav>
-      )}
       {/* Hero Section */}
       {!categoryId && !keyword && (
         <div className="relative overflow-hidden rounded-3xl bg-indigo-950 px-8 py-12 text-white xl:px-16 xl:py-20">
@@ -101,12 +73,25 @@ function StorefrontContent() {
         </div>
       )}
 
+      {/* Breadcrumb for Storefront */}
+      {(categoryId || keyword) && (
+        <nav className="flex items-center gap-1.5 text-sm text-slate-500">
+          <Link href="/" className="hover:text-indigo-600">Home</Link>
+          {parentCat && (<><span>/</span><Link href={`/?categoryId=${parentCat.id}`} className="hover:text-indigo-600">{parentCat.name}</Link></>)}
+          {activeCat && (<><span>/</span><span className="font-bold text-slate-900 dark:text-slate-100">{activeCat.name}</span></>)}
+          {keyword && (<><span>/</span><span className="italic">Search: "{keyword}"</span></>)}
+        </nav>
+      )}
+
+      <div className="flex gap-6">
+        <CategorySidebar activeId={categoryId ? Number(categoryId) : undefined} />
+        <div className="flex-1 min-w-0">
+
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">
-            {catName || t('orderService.storefront.all')}
+            {activeCat?.name || t('orderService.storefront.all')}
           </h2>
-          {keyword && <p className="mt-1 text-sm text-slate-500">{t('login.username')}: &ldquo;{keyword}&rdquo;</p>}
         </div>
 
         {/* Category pills */}
@@ -116,8 +101,8 @@ function StorefrontContent() {
           }`}>
             {t('orderService.storefront.all')}
           </Link>
-          {categories.flatMap(c => [c, ...(c.children || [])]).map(cat => {
-            const active = categoryId === cat.id.toString()
+          {categories.map(cat => {
+            const active = categoryId === cat.id.toString() || (activeCat?.parentId === cat.id)
             return (
               <Link key={cat.id} href={`/?categoryId=${cat.id}`}
                 className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
@@ -151,6 +136,8 @@ function StorefrontContent() {
           <Link href="/" className="mt-6 text-sm font-bold text-indigo-600 hover:text-indigo-700">Clear all filters</Link>
         </div>
       )}
+        </div>{/* close flex-1 */}
+      </div>{/* close flex with sidebar */}
     </div>
   )
 }
