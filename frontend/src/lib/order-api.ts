@@ -27,7 +27,7 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   let res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     const refreshed = await tryRefresh()
     if (refreshed) {
       const newToken = getToken()
@@ -35,8 +35,10 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
       res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
     } else {
       clearAuth()
+      sessionStorage.setItem('login_message', '登录已过期，请重新登录')
       sessionStorage.setItem('login_redirect', window.location.pathname)
       window.location.href = '/login'
+      throw new Error('Auth expired, redirecting to login')
     }
   }
   return res

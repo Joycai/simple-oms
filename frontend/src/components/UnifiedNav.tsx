@@ -19,12 +19,14 @@ export function UnifiedNav() {
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
-    const stored = sessionStorage.getItem('cart_count')
-    if (stored) setCartCount(Number(stored))
     const token = getToken()
     if (token) {
       setAuthed(true)
       setRoles(getRoles())
+      // Fetch real cart count from API
+      import('@/lib/order-api').then(({ fetchCart }) => {
+        fetchCart().then((items: any[]) => setCartCount(items.length)).catch(() => {})
+      })
     }
   }, [])
 
