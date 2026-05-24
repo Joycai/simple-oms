@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { StorefrontNav } from './StorefrontNav'
+import StorefrontNav from './StorefrontNav'
 
 export default function StorefrontLayout({ children }: { children: React.ReactNode }) {
   return (

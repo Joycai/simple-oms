@@ -10,7 +10,6 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
             <div className="flex-1" />
             <a href="/" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">Shop</a>
             <a href="/account" className="text-sm font-medium text-indigo-600">My Orders</a>
-            <a href="/seller" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">Sell</a>
           </div>
         </nav>
         <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
