@@ -18,11 +18,17 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
   return res
 }
 
+async function safeJson(res: Response) {
+  const text = await res.text()
+  if (!text) return []
+  try { return JSON.parse(text) } catch { return [] }
+}
+
 // ── Storefront ─────────────────────────────────────────────────
 
 export async function fetchCategories() {
   const res = await orderFetch('/categories')
-  return res.json()
+  return safeJson(res)
 }
 
 export async function fetchItems(params?: { categoryId?: number; keyword?: string }) {
@@ -30,19 +36,19 @@ export async function fetchItems(params?: { categoryId?: number; keyword?: strin
   if (params?.categoryId) qs.set('categoryId', String(params.categoryId))
   if (params?.keyword) qs.set('keyword', params.keyword)
   const res = await orderFetch(`/items?${qs}`)
-  return res.json()
+  return safeJson(res)
 }
 
 export async function fetchItem(id: number) {
   const res = await orderFetch(`/items/${id}`)
-  return res.json()
+  return safeJson(res)
 }
 
 // ── Cart ────────────────────────────────────────────────────────
 
 export async function fetchCart() {
   const res = await orderFetch('/cart')
-  return res.json()
+  return safeJson(res)
 }
 
 export async function addToCart(itemId: number, quantity: number) {
@@ -50,7 +56,7 @@ export async function addToCart(itemId: number, quantity: number) {
     method: 'POST',
     body: JSON.stringify({ itemId, quantity }),
   })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function updateCartItem(id: number, quantity: number) {
@@ -58,7 +64,7 @@ export async function updateCartItem(id: number, quantity: number) {
     method: 'PUT',
     body: JSON.stringify({ quantity }),
   })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function removeCartItem(id: number) {
@@ -69,49 +75,49 @@ export async function removeCartItem(id: number) {
 
 export async function checkout() {
   const res = await orderFetch('/orders', { method: 'POST' })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function fetchBuyerOrders() {
   const res = await orderFetch('/orders')
-  return res.json()
+  return safeJson(res)
 }
 
 export async function fetchOrder(id: number) {
   const res = await orderFetch(`/orders/${id}`)
-  return res.json()
+  return safeJson(res)
 }
 
 export async function confirmDelivered(id: number) {
   const res = await orderFetch(`/orders/${id}/deliver`, { method: 'POST' })
-  return res.json()
+  return safeJson(res)
 }
 
 // ── Seller ─────────────────────────────────────────────────────
 
 export async function fetchSellerItems() {
   const res = await orderFetch('/seller/items')
-  return res.json()
+  return safeJson(res)
 }
 
 export async function createItem(data: Record<string, unknown>) {
   const res = await orderFetch('/seller/items', { method: 'POST', body: JSON.stringify(data) })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function updateItem(id: number, data: Record<string, unknown>) {
   const res = await orderFetch(`/seller/items/${id}`, { method: 'PUT', body: JSON.stringify(data) })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function fetchSellerOrders() {
   const res = await orderFetch('/seller/orders')
-  return res.json()
+  return safeJson(res)
 }
 
 export async function markPaid(orderId: number) {
   const res = await orderFetch(`/seller/orders/${orderId}/pay`, { method: 'POST' })
-  return res.json()
+  return safeJson(res)
 }
 
 export async function shipOrder(orderId: number, trackingNumber: string) {
@@ -119,5 +125,5 @@ export async function shipOrder(orderId: number, trackingNumber: string) {
     method: 'POST',
     body: JSON.stringify({ trackingNumber }),
   })
-  return res.json()
+  return safeJson(res)
 }
