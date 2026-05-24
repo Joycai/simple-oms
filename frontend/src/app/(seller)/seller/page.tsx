@@ -28,12 +28,15 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const images = useImageUpload(5)
+  const [existingUrls, setExistingUrls] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
     if (item) {
       fetchItemImages(item.id).then((list: any[]) => {
-        images.setPreviews(list.map((img: any) => img.data))
+        const urls = list.map((img: any) => img.data)
+        setExistingUrls(new Set(urls))
+        images.setPreviews(urls)
       }).catch(() => {})
     }
   }, [item?.id])
@@ -69,11 +72,11 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
       
       const savedId = isEdit ? item.id : data.id
 
-      // Simplified image handling for Prototype: 
-      // In a real app, we'd only upload new images or diff them.
-      // For this story, we'll just ensure the previews are sent.
+      // Upload only NEW images (skip existing ones already on server)
       for (const b64 of images.previews) {
-        await uploadItemImage(savedId, b64)
+        if (!existingUrls.has(b64)) {
+          await uploadItemImage(savedId, b64)
+        }
       }
       
       setMsg(isEdit ? t('orderService.seller.form.updated') : t('orderService.seller.form.created'))
