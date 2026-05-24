@@ -157,7 +157,30 @@
                                         "edit":  "编辑",
                                         "noItems":  "暂无商品",
                                         "noOrders":  "暂无收到订单",
-                                        "viewDetails":  "查看详情"
+                                        "viewDetails":  "查看详情",
+                                        "form":  {
+                                                     "failed":  "操作失败",
+                                                     "save":  "保存商品",
+                                                     "category":  "所属品类",
+                                                     "quantity":  "库存数量",
+                                                     "saving":  "保存中...",
+                                                     "brand":  "品牌",
+                                                     "name":  "商品名称",
+                                                     "created":  "发布成功！",
+                                                     "price":  "价格",
+                                                     "description":  "商品描述",
+                                                     "selectCategory":  "请选择品类",
+                                                     "location":  "所在地",
+                                                     "images":  "商品图片",
+                                                     "cancel":  "取消",
+                                                     "updated":  "更新成功！"
+                                                 },
+                                        "categories":  {
+                                                           "placeholder":  "品类名称",
+                                                           "topLevel":  "顶级品类",
+                                                           "add":  "添加品类",
+                                                           "update":  "更新品类"
+                                                       }
                                     }
                      },
     "nav":  {

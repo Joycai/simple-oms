@@ -157,7 +157,30 @@
                                         "edit":  "Edit",
                                         "noItems":  "No items found.",
                                         "noOrders":  "No orders found.",
-                                        "viewDetails":  "View Details"
+                                        "viewDetails":  "View Details",
+                                        "form":  {
+                                                     "failed":  "Operation failed",
+                                                     "save":  "Save Item",
+                                                     "category":  "Category",
+                                                     "quantity":  "Quantity",
+                                                     "saving":  "Saving...",
+                                                     "brand":  "Brand",
+                                                     "name":  "Item Name",
+                                                     "created":  "Item created!",
+                                                     "price":  "Price",
+                                                     "description":  "Description",
+                                                     "selectCategory":  "Select Category",
+                                                     "location":  "Location",
+                                                     "images":  "Images",
+                                                     "cancel":  "Cancel",
+                                                     "updated":  "Item updated!"
+                                                 },
+                                        "categories":  {
+                                                           "placeholder":  "Category Name",
+                                                           "topLevel":  "Top Level",
+                                                           "add":  "Add Category",
+                                                           "update":  "Update Category"
+                                                       }
                                     }
                      },
     "nav":  {
