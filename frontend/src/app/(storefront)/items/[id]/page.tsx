@@ -13,6 +13,7 @@ export default function ItemDetailPage() {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [msg, setMsg] = useState('')
+  const [lightbox, setLightbox] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -41,7 +42,8 @@ export default function ItemDetailPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="grid gap-8 md:grid-cols-2">
-        <div className="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 overflow-hidden">
+        <div onClick={() => item.images?.[0]?.data && setLightbox(true)}
+          className="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 overflow-hidden cursor-pointer">
           {item.images?.[0]?.data ? (
             <img src={item.images[0].data} alt={item.name} className="h-full w-full object-cover" />
           ) : 'Image Placeholder'}
@@ -98,6 +100,14 @@ export default function ItemDetailPage() {
           </div>
         </div>
       </div>
+
+      {lightbox && item.images?.[0]?.data && (
+        <div onClick={() => setLightbox(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 cursor-zoom-out">
+          <img src={item.images[0].data} alt={item.name}
+            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain" />
+        </div>
+      )}
     </div>
   )
 }
