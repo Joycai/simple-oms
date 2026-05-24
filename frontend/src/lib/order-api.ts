@@ -1,6 +1,22 @@
-import { getToken } from './auth'
+import { getToken, getRefreshToken, setAuth, clearAuth } from './auth'
 
 const ORDER_API = process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:8081/api/v1'
+const IAM_API = '/api/v1'
+
+async function tryRefresh(): Promise<boolean> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return false
+  try {
+    const res = await fetch(`${IAM_API}/auth/refresh`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
+    if (!res.ok) return false
+    const data = await res.json()
+    setAuth(data.accessToken, data.refreshToken, data.username)
+    return true
+  } catch { return false }
+}
 
 export async function orderFetch(path: string, options: RequestInit = {}) {
   const token = getToken()
@@ -10,10 +26,18 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
+  let res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
   if (res.status === 401) {
-    sessionStorage.setItem('login_redirect', window.location.pathname)
-    window.location.href = '/login'
+    const refreshed = await tryRefresh()
+    if (refreshed) {
+      const newToken = getToken()
+      if (newToken) headers['Authorization'] = `Bearer ${newToken}`
+      res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
+    } else {
+      clearAuth()
+      sessionStorage.setItem('login_redirect', window.location.pathname)
+      window.location.href = '/login'
+    }
   }
   return res
 }
