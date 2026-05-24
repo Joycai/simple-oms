@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   fetchSellerItems, 
@@ -28,15 +28,14 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const images = useImageUpload(5)
-  const [existingUrls, setExistingUrls] = useState<Set<string>>(new Set())
+  const existingCount = useRef(0)
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
     if (item) {
       fetchItemImages(item.id).then((list: any[]) => {
-        const urls = list.map((img: any) => img.data)
-        setExistingUrls(new Set(urls))
-        images.setPreviews(urls)
+        existingCount.current = list.length
+        images.setPreviews(list.map((img: any) => img.data))
       }).catch(() => {})
     }
   }, [item?.id])
@@ -72,11 +71,9 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
       
       const savedId = isEdit ? item.id : data.id
 
-      // Fix: Only upload NEW images that don't exist in existingUrls
-      for (const b64 of images.previews) {
-        if (!existingUrls.has(b64)) {
-          await uploadItemImage(savedId, b64)
-        }
+      // Upload only NEW images (skip existing ones by count)
+      for (let i = existingCount.current; i < images.previews.length; i++) {
+        await uploadItemImage(savedId, images.previews[i])
       }
       
       setMsg(isEdit ? t('orderService.seller.form.updated') : t('orderService.seller.form.created'))
