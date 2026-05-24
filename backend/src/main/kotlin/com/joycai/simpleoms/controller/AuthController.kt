@@ -77,6 +77,31 @@ class AuthController(
         return issueTokens(user)
     }
 
+    @PostMapping("/refresh")
+    fun refresh(@RequestBody body: Map<String, String>): ResponseEntity<Map<String, Any>> {
+        val refreshToken = body["refreshToken"] ?: return ResponseEntity.badRequest().body(mapOf("message" to "Missing refreshToken"))
+        if (!jwtUtil.isTokenValid(refreshToken))
+            return ResponseEntity.badRequest().body(mapOf("message" to "Invalid or expired refresh token"))
+        val tokenId = jwtUtil.extractTokenId(refreshToken) ?: return ResponseEntity.badRequest().body(mapOf("message" to "Missing token id"))
+        if (!refreshTokenService.isValid(tokenId))
+            return ResponseEntity.badRequest().body(mapOf("message" to "Refresh token revoked"))
+
+        val username = jwtUtil.extractUsername(refreshToken)
+        val roles = jwtUtil.extractRoles(refreshToken)
+
+        // Rotation: revoke old, issue new
+        refreshTokenService.revoke(tokenId)
+        val newAccess = jwtUtil.generateAccessToken(username, roles)
+        val (newTokenId, newRefresh) = jwtUtil.generateRefreshToken(username, roles)
+        refreshTokenService.store(newTokenId, username)
+
+        return ResponseEntity.ok(mapOf(
+            "accessToken" to newAccess,
+            "refreshToken" to newRefresh,
+            "username" to username,
+        ))
+    }
+
     @PutMapping("/change-password")
     fun changePassword(@Valid @RequestBody request: ChangePasswordRequest, @AuthenticationPrincipal username: String): ResponseEntity<Map<String, String>> {
         val user = userRepository.findByUsername(username) ?: throw authError()

@@ -4,7 +4,6 @@ webauthn:
   origin: http://localhost:3200
 
 jwt:
-  secret: simple-oms-jwt-secret-key-2026-min-256-bit-long!!
   access-expiration-ms: 900000
   refresh-expiration-ms: 604800000
 
