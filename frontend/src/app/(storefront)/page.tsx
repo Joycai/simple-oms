@@ -45,9 +45,6 @@ export default function StorefrontPage() {
 function StorefrontContent() {
   const { t } = useI18n()
   const searchParams = useSearchParams()
-  const [items, setItems] = useState<any[]>([])
-  const [categories, setCategories] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const categoryId = searchParams.get('categoryId')
   const keyword = searchParams.get('keyword')
 
@@ -55,8 +52,8 @@ function StorefrontContent() {
     variables: { categoryId, keyword },
   })
 
-  const items = data?.items || []
-  const categories = data?.categories || []
+  const items = (data?.items || []) as any[]
+  const categories = (data?.categories || []) as any[]
 
   const allCats = categories.flatMap((c: any) => [c, ...(c.children || [])])
   const activeCat = categoryId ? allCats.find((c: any) => c?.id === Number(categoryId)) : null
