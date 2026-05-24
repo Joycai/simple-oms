@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { fetchItems, fetchCategories } from '@/lib/order-api'
+import { fetchItems, fetchCategories, fetchItemImages } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 import { ItemCard } from '@/components/ItemCard'
 
@@ -49,7 +49,16 @@ function StorefrontContent() {
     const cid = categoryId ? Number(categoryId) : undefined
     const kw = keyword || undefined
     fetchItems({ categoryId: cid, keyword: kw })
-      .then(setItems)
+      .then(async (list: any[]) => {
+        // Fetch first image for each item
+        const withImages = await Promise.all(list.map(async (item: any) => {
+          try {
+            const images = await fetchItemImages(item.id)
+            return { ...item, image: images[0]?.data || null }
+          } catch { return { ...item, image: null } }
+        }))
+        setItems(withImages)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [categoryId, keyword])

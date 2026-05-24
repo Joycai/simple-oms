@@ -11,12 +11,13 @@ interface ItemCardProps {
     location?: string
     price: number
     quantity: number
+    image?: string  // base64 data URL
   }
 }
 
 export function ItemCard({ item }: ItemCardProps) {
   const { t } = useI18n()
-  
+
   const initials = item.name.substring(0, 2).toUpperCase()
   const gradients = [
     'from-indigo-100 to-slate-200',
@@ -29,10 +30,14 @@ export function ItemCard({ item }: ItemCardProps) {
   return (
     <Link href={`/items/${item.id}`}
       className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:border-indigo-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900">
-      
-      {/* Image Placeholder */}
-      <div className={`relative aspect-[4/3] w-full bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}>
-        <span className="font-serif text-3xl font-bold text-indigo-900/20 select-none">{initials}</span>
+
+      {/* Image */}
+      <div className={`relative aspect-[4/3] w-full overflow-hidden ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
+        {item.image ? (
+          <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+        ) : (
+          <span className="absolute inset-0 flex items-center justify-center font-serif text-3xl font-bold text-indigo-900/20 select-none">{initials}</span>
+        )}
         
         {/* Availability Badge */}
         <div className="absolute left-3 top-3">
