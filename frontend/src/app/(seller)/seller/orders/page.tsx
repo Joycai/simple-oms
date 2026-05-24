@@ -6,7 +6,7 @@ import { fetchSellerOrders, markPaid, shipOrder } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 
 export default function SellerOrdersPage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
