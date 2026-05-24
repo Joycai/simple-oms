@@ -44,7 +44,7 @@ export default function SellerOrderDetailPage() {
             <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">{t('login.management')}</h3>
             <div className="divide-y">
               {(order.items || []).map((item: any) => (
-                <div key={item.id} className="py-3 flex justify-between">
+                <div key={item.itemId || item.id} className="py-3 flex justify-between">
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</div>
                     <div className="text-xs text-slate-500">¥{item.unitPrice} x {item.quantity}</div>
