@@ -1,6 +1,7 @@
 package com.joycai.simpleoms.config
 
 import com.joycai.simpleoms.security.JwtAuthFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
