@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { fetchSellerItems, fetchCategories, fetchItemImages, uploadItemImage, deleteItemImage, reorderItemImages } from '@/lib/order-api'
+import { fetchSellerItems, fetchCategories } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 import { useImageUpload, ImageInput } from '@/components/ImageUploader'
 
