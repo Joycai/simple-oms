@@ -2,6 +2,16 @@ plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
     id("io.spring.dependency-management") version "1.1.7"
+    `maven-publish`
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+            artifactId = "iam-client-starter"
+        }
+    }
 }
 
 group = "com.joycai"
