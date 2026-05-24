@@ -109,13 +109,6 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   return res
 }
 
-export function getDefaultRedirect(): string {
-  const roles = getRoles()
-  if (roles.includes('admin')) return '/dashboard'
-  if (roles.includes('seller')) return '/seller'
-  return '/'
-}
-
 export async function logout() {
   const refreshToken = getRefreshToken()
   if (refreshToken) {
