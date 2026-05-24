@@ -54,6 +54,9 @@ export function UnifiedNav() {
 
   function handleLogout() {
     clearAuth()
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('cart_count')
+    }
     setCartCount(0)
     setAuthed(false)
     router.push('/')

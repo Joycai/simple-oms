@@ -3,20 +3,11 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { gql, useQuery } from '@apollo/client'
+import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
 import { ItemCard } from '@/components/ItemCard'
 import { CategorySidebar } from '@/components/CategorySidebar'
-
-const GET_ITEMS = gql`
-  query GetItems($categoryId: ID, $keyword: String) {
-    items(categoryId: $categoryId, keyword: $keyword) {
-      id name price quantity brand location status thumbnail
-      category { id name parentId }
-    }
-    categories { id name parentId children { id name parentId } }
-  }
-`
+import { fetchItems, fetchCategories } from '@/lib/order-api'
 
 function SkeletonCard() {
   return (
@@ -48,12 +39,20 @@ function StorefrontContent() {
   const categoryId = searchParams.get('categoryId')
   const keyword = searchParams.get('keyword')
 
-  const { data, loading } = useQuery(GET_ITEMS, {
-    variables: { categoryId, keyword },
-  })
+  const [items, setItems] = useState<any[]>([])
+  const [categoryList, setCategoryList] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const items = (data?.items || []) as any[]
-  const categoryList = (data?.categories || []) as any[]
+  useEffect(() => {
+    fetchCategories().then(setCategoryList).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    Promise.all([
+      fetchItems({ categoryId: categoryId ? Number(categoryId) : undefined, keyword: keyword || undefined }),
+    ]).then(([list]) => setItems(list)).finally(() => setLoading(false))
+  }, [categoryId, keyword])
 
   const allCats = categoryList.flatMap((c: any) => [c, ...(c.children || [])])
   const activeCat = categoryId ? allCats.find((c: any) => c?.id === Number(categoryId)) : null

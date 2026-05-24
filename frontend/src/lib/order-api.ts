@@ -35,9 +35,13 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
       res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
     } else {
       clearAuth()
-      sessionStorage.setItem('login_message', '登录已过期，请重新登录')
-      sessionStorage.setItem('login_redirect', window.location.pathname)
-      window.location.href = '/login'
+      // Fix: Also clear cart count on session expiry
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('cart_count')
+        sessionStorage.setItem('login_message', '登录已过期，请重新登录')
+        sessionStorage.setItem('login_redirect', window.location.pathname)
+        window.location.href = '/login'
+      }
       throw new Error('Auth expired, redirecting to login')
     }
   }
