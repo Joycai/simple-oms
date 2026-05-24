@@ -44,8 +44,8 @@ export default function SellerOrdersPage() {
                 <div className="text-sm font-bold text-slate-900 dark:text-slate-100">#{o.id}</div>
               </div>
               <div className="flex gap-2">
-                <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {o.paymentStatus}
+                <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {o.paymentStatus === 'paid' ? (locale === 'zh-CN' ? '已付款' : 'Paid') : (locale === 'zh-CN' ? '待付款' : 'Unpaid')}
                 </div>
                 <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
                    {t('orderService.account.status.' + o.status.toLowerCase())}

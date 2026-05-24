@@ -17,14 +17,16 @@ export default function SellerOrderDetailPage() {
 
   async function handleMarkPaid() {
     await markPaid(order.id)
-    fetchOrder(order.id).then(setOrder)
+    const updated = await fetchOrder(order.id)
+    setOrder(updated)
   }
 
   async function handleShip() {
     const tracking = prompt(t('orderService.seller.trackingPlaceholder'))
     if (tracking) {
       await shipOrder(order.id, tracking)
-      fetchOrder(order.id).then(setOrder)
+      const updated = await fetchOrder(order.id)
+      setOrder(updated)
     }
   }
 
