@@ -8,32 +8,32 @@ import java.time.Instant
 class WebAuthnCredential(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    val user: User,
+    var user: User,
 
     @Column(name = "credential_id", nullable = false, unique = true, length = 1000)
-    val credentialId: String,
+    var credentialId: String,
 
     @Column(name = "user_handle", nullable = false, length = 256, columnDefinition = "VARCHAR(256) DEFAULT '0'")
-    val userHandle: String,
+    var userHandle: String,
 
     @Column(name = "public_key", nullable = false, columnDefinition = "TEXT")
-    val publicKeyCose: String,
+    var publicKeyCose: String,
 
     @Column(name = "signature_count", nullable = false)
     var signatureCount: Long = 0,
 
     @Column(name = "device_name", length = 100)
-    val deviceName: String? = null,
+    var deviceName: String? = null,
 
     @Column(name = "last_used_at")
     var lastUsedAt: Instant? = null,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Instant.now(),
+    var createdAt: Instant = Instant.now(),
 ) {
     override fun equals(other: Any?): Boolean = other is WebAuthnCredential && other.id == id
     override fun hashCode(): Int = id.hashCode()
