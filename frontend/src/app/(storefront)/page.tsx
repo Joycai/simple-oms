@@ -67,8 +67,22 @@ function StorefrontContent() {
     ? categories.flatMap(c => [c, ...(c.children || [])]).find(c => c?.id === Number(categoryId))?.name
     : null
 
+  const catL1Id = categoryId
+    ? categories.find(c => (c.children || []).some((child: any) => child.id === Number(categoryId)))?.id
+    : null
+  const catL1Name = catL1Id ? categories.find(c => c.id === catL1Id)?.name : null
+
   return (
     <div className="space-y-8">
+      {/* Breadcrumb */}
+      {(categoryId || keyword) && (
+        <nav className="flex items-center gap-1.5 text-sm text-slate-500">
+          <Link href="/" className="hover:text-indigo-600">Home</Link>
+          {catL1Name && catName && catL1Name !== catName && (<><span>/</span><Link href={`/?categoryId=${catL1Id}`} className="hover:text-indigo-600">{catL1Name}</Link></>)}
+          {catName && (<><span>/</span><span className="text-slate-900 dark:text-slate-300">{catName}</span></>)}
+          {keyword && (<><span>/</span><span className="text-slate-900 dark:text-slate-300">Search: {keyword}</span></>)}
+        </nav>
+      )}
       {/* Hero Section */}
       {!categoryId && !keyword && (
         <div className="relative overflow-hidden rounded-3xl bg-indigo-950 px-8 py-12 text-white xl:px-16 xl:py-20">
