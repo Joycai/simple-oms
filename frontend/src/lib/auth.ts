@@ -47,6 +47,21 @@ export function hasRole(role: string): boolean {
   return getRoles().includes(role)
 }
 
+const ALLOWED_REDIRECTS: Record<string, string[]> = {
+  buyer: ['/', '/cart', '/items', '/account'],
+  seller: ['/', '/cart', '/items', '/account', '/seller'],
+  admin: ['/', '/cart', '/items', '/account', '/seller', '/admin'],
+}
+
+export function isValidRedirect(url: string, roles: string[]): boolean {
+  try {
+    const u = new URL(url, window.location.origin)
+    if (u.origin !== window.location.origin) return false // no external redirects
+    const allowed = roles.flatMap(r => ALLOWED_REDIRECTS[r] || [])
+    return allowed.some(prefix => u.pathname.startsWith(prefix))
+  } catch { return false }
+}
+
 export function getDefaultRedirect(): string {
   const roles = getRoles()
   if (roles.includes('admin')) return '/admin'

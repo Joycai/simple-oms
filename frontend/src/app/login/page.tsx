@@ -3,7 +3,7 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth, apiFetch, getDefaultRedirect } from '@/lib/auth'
+import { setAuth, apiFetch, getDefaultRedirect, isValidRedirect, getRoles } from '@/lib/auth'
 import { startAuthentication } from '@simplewebauthn/browser'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
@@ -103,7 +103,7 @@ export default function LoginPage() {
       // Security: password should not persist in memory longer than needed
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
-      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
+      if (redirect && isValidRedirect(redirect, getRoles())) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
       else router.replace(getDefaultRedirect())
     } catch {
       setError(t('login.loginError'))
@@ -130,7 +130,7 @@ export default function LoginPage() {
       sessionStorage.setItem('last_login_method', 'passkey')
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
-      router.replace(redirect || getDefaultRedirect())
+      router.replace((redirect && isValidRedirect(redirect, getRoles())) ? redirect : getDefaultRedirect())
     } catch {
       setStep('password') // user cancelled → show password
     } finally { setLoading(false) }
