@@ -49,7 +49,7 @@ export function hasRole(role: string): boolean {
 
 export function getDefaultRedirect(): string {
   const roles = getRoles()
-  if (roles.includes('admin')) return '/dashboard'
+  if (roles.includes('admin')) return '/admin'
   if (roles.includes('seller')) return '/seller'
   return '/'
 }

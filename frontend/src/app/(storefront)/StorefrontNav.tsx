@@ -4,24 +4,36 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchCategories } from '@/lib/order-api'
-import { useI18n } from '@/lib/i18n'
+import { getToken, getRoles, clearAuth } from '@/lib/auth'
 
-export function StorefrontNav() {
-  const { t } = useI18n()
+export default function StorefrontNav() {
   const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
   const [keyword, setKeyword] = useState('')
+  const [authed, setAuthed] = useState(false)
+  const [roles, setRoles] = useState<string[]>([])
 
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
     const stored = sessionStorage.getItem('cart_count')
     if (stored) setCartCount(Number(stored))
+    const token = getToken()
+    if (token) {
+      setAuthed(true)
+      setRoles(getRoles())
+    }
   }, [])
 
   function search(e: React.FormEvent) {
     e.preventDefault()
     router.push(keyword ? `/?keyword=${encodeURIComponent(keyword)}` : '/')
+  }
+
+  function handleLogout() {
+    clearAuth()
+    router.push('/')
+    router.refresh()
   }
 
   return (
@@ -31,7 +43,6 @@ export function StorefrontNav() {
           simple-oms
         </Link>
 
-        {/* Category dropdowns */}
         {categories.map((l1: any) => (
           <div key={l1.id} className="group relative hidden md:block">
             <button className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
@@ -52,14 +63,12 @@ export function StorefrontNav() {
 
         <div className="flex-1" />
 
-        {/* Search */}
         <form onSubmit={search} className="hidden sm:block">
           <input value={keyword} onChange={e => setKeyword(e.target.value)}
-            placeholder={t('orderService.storefront.searchPlaceholder')}
-            className="w-48 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+            placeholder="Search..."
+            className="w-40 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
         </form>
 
-        {/* Cart */}
         <Link href="/cart" className="relative text-slate-600 hover:text-slate-900 dark:text-slate-400">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
@@ -72,16 +81,32 @@ export function StorefrontNav() {
           )}
         </Link>
 
-        {/* User */}
-        <Link href="/account" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          {t('orderService.account.title')}
-        </Link>
-        <Link href="/seller" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          {t('orderService.seller.title')}
-        </Link>
-        <Link href="/dashboard" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          {t('login.management')}
-        </Link>
+        {authed ? (
+          <>
+            {roles.includes('buyer') || roles.includes('admin') ? (
+              <Link href="/account" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
+                Orders
+              </Link>
+            ) : null}
+            {roles.includes('seller') ? (
+              <Link href="/seller" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
+                Seller
+              </Link>
+            ) : null}
+            {roles.includes('admin') ? (
+              <Link href="/admin" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
+                Admin
+              </Link>
+            ) : null}
+            <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400">
+              Logout
+            </button>
+          </>
+        ) : (
+          <Link href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            Sign In
+          </Link>
+        )}
       </div>
     </nav>
   )

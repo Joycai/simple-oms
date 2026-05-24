@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { fetchItems, fetchCategories } from '@/lib/order-api'
@@ -24,6 +24,14 @@ function SkeletonCard() {
 }
 
 export default function StorefrontPage() {
+  return (
+    <Suspense fallback={<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}</div>}>
+      <StorefrontContent />
+    </Suspense>
+  )
+}
+
+function StorefrontContent() {
   const { t } = useI18n()
   const searchParams = useSearchParams()
   const [items, setItems] = useState<any[]>([])
@@ -122,4 +130,5 @@ export default function StorefrontPage() {
       )}
     </div>
   )
+}
 }

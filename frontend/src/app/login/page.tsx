@@ -14,7 +14,7 @@ function getDefaultRedirect(): string {
     if (!token) return '/'
     const payload = JSON.parse(atob(token.split('.')[1]))
     const roles: string[] = payload.roles || []
-    if (roles.includes('admin')) return '/dashboard'
+    if (roles.includes('admin')) return '/admin'
     if (roles.includes('seller')) return '/seller'
   } catch {}
   return '/'
