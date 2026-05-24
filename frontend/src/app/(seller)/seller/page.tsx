@@ -10,7 +10,7 @@ import {
   orderFetch 
 } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
-import { useImageUpload, ImageInput } from '@/components/ImageUploader'
+import { useImageUpload, ImageInput, ImageCropModal } from '@/components/ImageUploader'
 
 function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
   const { t } = useI18n()
@@ -200,6 +200,7 @@ function ItemForm({ item, onSaved }: { item?: any; onSaved: () => void }) {
             <span className="text-[10px] font-bold uppercase tracking-tighter">Add Photo</span>
           </button>
           <ImageInput upload={images} />
+          <ImageCropModal upload={images} />
         </div>
         {images.error && <p className="mt-2 text-xs font-medium text-red-500">{images.error}</p>}
       </div>
