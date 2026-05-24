@@ -1,7 +1,6 @@
 plugins {
     kotlin("jvm") version "2.3.21"
     kotlin("plugin.spring") version "2.3.21"
-    id("org.springframework.boot") version "4.0.6"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -20,6 +19,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:4.0.6")
+    }
+}
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
@@ -30,15 +35,6 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     implementation(kotlin("stdlib"))
-}
-
-tasks.bootJar {
-    enabled = false
-}
-
-tasks.jar {
-    enabled = true
-    archiveClassifier = ""
 }
 
 kotlin {
