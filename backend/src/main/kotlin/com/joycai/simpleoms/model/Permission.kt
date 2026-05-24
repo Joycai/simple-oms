@@ -4,17 +4,17 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "permissions")
-data class Permission(
+class Permission(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(nullable = false, unique = true, length = 100)
-    val code: String,
+    var code: String,
 
     @Column(nullable = false, length = 50)
-    val module: String,
+    var module: String,
 
     @Column(nullable = false, length = 50)
-    val name: String,
+    var name: String,
 )

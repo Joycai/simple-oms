@@ -2,35 +2,71 @@ package com.joycai.simpleoms.config
 
 import com.joycai.simpleoms.model.Permission
 import com.joycai.simpleoms.model.Role
+import com.joycai.simpleoms.model.SigningKey
 import com.joycai.simpleoms.model.User
 import com.joycai.simpleoms.repository.PermissionRepository
 import com.joycai.simpleoms.repository.RoleRepository
+import com.joycai.simpleoms.repository.SigningKeyRepository
 import com.joycai.simpleoms.repository.UserRepository
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.security.crypto.password.PasswordEncoder
+import java.security.KeyPairGenerator
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
+import java.util.Base64
+import java.util.UUID
 
 @Configuration
 class DataInitializer {
 
     @Bean
+    @Order(0)
+    fun generateSigningKey(signingKeyRepository: SigningKeyRepository) = CommandLineRunner {
+        if (signingKeyRepository.count() == 0L) {
+            val gen = KeyPairGenerator.getInstance("EC")
+            gen.initialize(256)
+            val pair = gen.generateKeyPair()
+            val priv = pair.private as ECPrivateKey
+            val pub = pair.public as ECPublicKey
+            val b64 = Base64.getEncoder()
+            signingKeyRepository.save(
+                SigningKey(
+                    kid = UUID.randomUUID().toString().take(8),
+                    keyType = "EC",
+                    privateKeyPem = "-----BEGIN PRIVATE KEY-----\n" + b64.encodeToString(priv.encoded) + "\n-----END PRIVATE KEY-----",
+                    publicKeyPem = "-----BEGIN PUBLIC KEY-----\n" + b64.encodeToString(pub.encoded) + "\n-----END PUBLIC KEY-----",
+                    algorithm = "ES256",
+                )
+            )
+        }
+    }
+
+    @Bean
     @Order(1)
     fun seedPermissions(permissionRepository: PermissionRepository) = CommandLineRunner {
         val permissions = listOf(
-            "user:read" to ("用户管理" to "查看用户"),
-            "user:write" to ("用户管理" to "创建/编辑用户"),
-            "user:delete" to ("用户管理" to "删除用户"),
-            "role:read" to ("角色管理" to "查看角色"),
-            "role:write" to ("角色管理" to "创建/编辑角色"),
-            "role:delete" to ("角色管理" to "删除角色"),
-            "order:read" to ("订单管理" to "查看订单"),
-            "order:write" to ("订单管理" to "创建/编辑订单"),
-            "order:delete" to ("订单管理" to "删除订单"),
-            "inventory:read" to ("库存管理" to "查看库存"),
-            "inventory:write" to ("库存管理" to "管理库存"),
-            "report:read" to ("数据报表" to "查看报表"),
+            "iam:user:create" to ("IAM" to "创建用户"),
+            "iam:user:read" to ("IAM" to "查看用户"),
+            "iam:user:update" to ("IAM" to "编辑用户"),
+            "iam:user:delete" to ("IAM" to "删除用户"),
+            "iam:user:disable" to ("IAM" to "启用/禁用用户"),
+            "iam:user:reset-password" to ("IAM" to "重置密码"),
+            "iam:role:create" to ("IAM" to "创建角色"),
+            "iam:role:read" to ("IAM" to "查看角色"),
+            "iam:role:update" to ("IAM" to "编辑角色"),
+            "iam:role:delete" to ("IAM" to "删除角色"),
+            "iam:role:assign" to ("IAM" to "分配角色"),
+            "iam:permission:read" to ("IAM" to "查看权限"),
+            "iam:permission:assign" to ("IAM" to "分配权限"),
+            "iam:client:manage" to ("IAM" to "管理客户端"),
+            "order:order:create" to ("Order" to "创建订单"),
+            "order:order:read" to ("Order" to "查看订单"),
+            "order:order:update" to ("Order" to "编辑订单"),
+            "order:order:cancel" to ("Order" to "取消订单"),
+            "order:shipment:manage" to ("Order" to "物流管理"),
         )
         permissions.forEach { (code, groupName) ->
             if (permissionRepository.findByCode(code) == null) {

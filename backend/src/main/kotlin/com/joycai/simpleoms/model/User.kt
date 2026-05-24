@@ -8,10 +8,10 @@ import java.time.Instant
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(nullable = false, unique = true, length = 50)
-    val username: String,
+    var username: String,
 
     @Column(nullable = false)
     var password: String,
@@ -29,7 +29,7 @@ class User(
     var enabled: Boolean = true,
 
     @Column(name = "created_at", nullable = false)
-    val createdAt: Instant = Instant.now(),
+    var createdAt: Instant = Instant.now(),
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -37,7 +37,7 @@ class User(
         joinColumns = [JoinColumn(name = "user_id")],
         inverseJoinColumns = [JoinColumn(name = "role_id")],
     )
-    val roles: MutableList<Role> = mutableListOf(),
+    var roles: MutableList<Role> = mutableListOf(),
 
     @Column(length = 32)
     var totpSecret: String? = null,

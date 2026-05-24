@@ -7,13 +7,13 @@ import jakarta.persistence.*
 class Role(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0,
 
     @Column(nullable = false, unique = true, length = 50)
-    val name: String,
+    var name: String,
 
     @Column(length = 200)
-    val description: String? = null,
+    var description: String? = null,
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -21,10 +21,10 @@ class Role(
         joinColumns = [JoinColumn(name = "role_id")],
         inverseJoinColumns = [JoinColumn(name = "permission_id")],
     )
-    val permissions: MutableList<Permission> = mutableListOf(),
+    var permissions: MutableList<Permission> = mutableListOf(),
 
     @ManyToMany(mappedBy = "roles")
-    val users: MutableList<User> = mutableListOf(),
+    var users: MutableList<User> = mutableListOf(),
 ) {
     override fun equals(other: Any?): Boolean = other is Role && other.id == id
     override fun hashCode(): Int = id.hashCode()

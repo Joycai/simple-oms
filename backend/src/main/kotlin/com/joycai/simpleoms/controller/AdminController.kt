@@ -6,11 +6,13 @@ import com.joycai.simpleoms.repository.RoleRepository
 import com.joycai.simpleoms.repository.UserRepository
 import com.joycai.simpleoms.security.RefreshTokenService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/admin")
+@PreAuthorize("hasRole('admin')")
 class AdminController(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,

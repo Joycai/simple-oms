@@ -10,29 +10,36 @@ class RefreshTokenService(
     private val redissonClient: RedissonClient,
     @Value("\${jwt.refresh-expiration-ms}") private val refreshExpirationMs: Long,
 ) {
-    private fun key(tokenId: String) = "refresh:$tokenId"
+    private fun tokenKey(tokenId: String) = "refresh:$tokenId"
+    private fun userTokensKey(username: String) = "refresh:user:$username"
 
     fun store(tokenId: String, username: String) {
-        redissonClient.getBucket<String>(key(tokenId))
-            .set(username, Duration.ofMillis(refreshExpirationMs))
+        val ttl = Duration.ofMillis(refreshExpirationMs)
+        redissonClient.getBucket<String>(tokenKey(tokenId)).set(username, ttl)
+        redissonClient.getSet<String>(userTokensKey(username)).add(tokenId)
+        redissonClient.getSet<String>(userTokensKey(username)).expire(ttl)
     }
 
     fun isValid(tokenId: String): Boolean =
-        redissonClient.getBucket<String>(key(tokenId)).isExists
+        redissonClient.getBucket<String>(tokenKey(tokenId)).isExists
 
     fun getUsername(tokenId: String): String? =
-        redissonClient.getBucket<String>(key(tokenId)).get()
+        redissonClient.getBucket<String>(tokenKey(tokenId)).get()
 
     fun revoke(tokenId: String) {
-        redissonClient.getBucket<String>(key(tokenId)).delete()
+        val username = getUsername(tokenId)
+        if (username != null) {
+            redissonClient.getSet<String>(userTokensKey(username)).remove(tokenId)
+        }
+        redissonClient.getBucket<String>(tokenKey(tokenId)).delete()
     }
 
     fun revokeAllForUser(username: String) {
-        val keys = redissonClient.keys.getKeysStreamByPattern("refresh:*", 100)
-        keys.forEach { key ->
-            if (redissonClient.getBucket<String>(key).get() == username) {
-                redissonClient.getBucket<String>(key).delete()
-            }
+        val set = redissonClient.getSet<String>(userTokensKey(username))
+        val tokenIds = set.readAll()
+        tokenIds.forEach { id ->
+            redissonClient.getBucket<String>(tokenKey(id)).delete()
         }
+        set.delete()
     }
 }

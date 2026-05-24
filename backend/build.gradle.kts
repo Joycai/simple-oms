@@ -1,9 +1,9 @@
 plugins {
-	kotlin("jvm") version "2.2.21"
-	kotlin("plugin.spring") version "2.2.21"
+	kotlin("jvm") version "2.3.21"
+	kotlin("plugin.spring") version "2.3.21"
+	kotlin("plugin.jpa") version "2.3.21"
 	id("org.springframework.boot") version "4.0.6"
 	id("io.spring.dependency-management") version "1.1.7"
-	kotlin("plugin.jpa") version "2.2.21"
 }
 
 group = "com.joycai"
@@ -14,8 +14,8 @@ java {
 		languageVersion = JavaLanguageVersion.of(25)
 	}
 	// Kotlin 2.2.x targets JVM 24 max; keep Java bytecode aligned
-	sourceCompatibility = JavaVersion.VERSION_24
-	targetCompatibility = JavaVersion.VERSION_24
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 repositories {
@@ -49,6 +49,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("io.mockk:mockk:1.14.3")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 kotlin {

@@ -7,10 +7,12 @@ import com.joycai.simpleoms.repository.PermissionRepository
 import com.joycai.simpleoms.repository.RoleRepository
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/roles")
+@PreAuthorize("hasRole('admin')")
 class RoleController(
     private val roleRepository: RoleRepository,
     private val permissionRepository: PermissionRepository,
