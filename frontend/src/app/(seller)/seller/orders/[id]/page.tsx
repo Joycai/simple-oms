@@ -29,7 +29,7 @@ export default function SellerOrderDetailPage() {
   }
 
   if (loading) return <div className="py-20 text-center text-slate-400">{t('login.loggingIn')}</div>
-  if (!order) return <div className="py-20 text-center text-slate-400">{t('orderService.storefront.noItems')}</div>
+  if (!order || !order.id) return <div className="py-20 text-center text-slate-400">{t('orderService.storefront.noItems')}</div>
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -43,7 +43,7 @@ export default function SellerOrderDetailPage() {
           <div className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
             <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">{t('login.management')}</h3>
             <div className="divide-y">
-              {order.items.map((item: any) => (
+              {(order.items || []).map((item: any) => (
                 <div key={item.id} className="py-3 flex justify-between">
                   <div>
                     <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{item.name}</div>

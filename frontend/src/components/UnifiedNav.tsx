@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { fetchCategories } from '@/lib/order-api'
+import { fetchCategories, fetchCart } from '@/lib/order-api'
 import { getToken, getRoles, clearAuth } from '@/lib/auth'
 import { useI18n } from '@/lib/i18n'
 
@@ -17,18 +17,35 @@ export function UnifiedNav() {
   const [authed, setAuthed] = useState(false)
   const [roles, setRoles] = useState<string[]>([])
 
+  const syncCart = useCallback(async () => {
+    const token = getToken()
+    if (token) {
+      try {
+        const cart = await fetchCart()
+        setCartCount(cart?.length || 0)
+      } catch {
+        setCartCount(0)
+      }
+    } else {
+      const stored = sessionStorage.getItem('cart_count')
+      setCartCount(stored ? Number(stored) : 0)
+    }
+  }, [])
+
   useEffect(() => {
     fetchCategories().then(setCategories).catch(() => {})
+    syncCart()
+
     const token = getToken()
     if (token) {
       setAuthed(true)
       setRoles(getRoles())
-      // Fetch real cart count from API
-      import('@/lib/order-api').then(({ fetchCart }) => {
-        fetchCart().then((items: any[]) => setCartCount(items.length)).catch(() => {})
-      })
     }
-  }, [])
+
+    // Listen for custom cart updates
+    window.addEventListener('cart-updated', syncCart)
+    return () => window.removeEventListener('cart-updated', syncCart)
+  }, [syncCart])
 
   function search(e: React.FormEvent) {
     e.preventDefault()
@@ -37,6 +54,8 @@ export function UnifiedNav() {
 
   function handleLogout() {
     clearAuth()
+    setCartCount(0)
+    setAuthed(false)
     router.push('/')
     router.refresh()
   }
