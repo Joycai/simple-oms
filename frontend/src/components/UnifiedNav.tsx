@@ -2,12 +2,15 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { fetchCategories } from '@/lib/order-api'
 import { getToken, getRoles, clearAuth } from '@/lib/auth'
+import { useI18n } from '@/lib/i18n'
 
-export default function StorefrontNav() {
+export function UnifiedNav() {
+  const { t } = useI18n()
   const router = useRouter()
+  const pathname = usePathname()
   const [categories, setCategories] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
   const [keyword, setKeyword] = useState('')
@@ -36,6 +39,8 @@ export default function StorefrontNav() {
     router.refresh()
   }
 
+  const loginUrl = `/login?redirect=${encodeURIComponent(pathname)}`
+
   return (
     <nav className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur dark:bg-slate-900/95 dark:border-slate-800">
       <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
@@ -43,7 +48,8 @@ export default function StorefrontNav() {
           simple-oms
         </Link>
 
-        {categories.map((l1: any) => (
+        {/* Categories (only on storefront) */}
+        {pathname === '/' && categories.map((l1: any) => (
           <div key={l1.id} className="group relative hidden md:block">
             <button className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200">
               {l1.name}
@@ -63,9 +69,10 @@ export default function StorefrontNav() {
 
         <div className="flex-1" />
 
+        {/* Search */}
         <form onSubmit={search} className="hidden sm:block">
           <input value={keyword} onChange={e => setKeyword(e.target.value)}
-            placeholder="Search..."
+            placeholder={t('nav.search')}
             className="w-40 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
         </form>
 
@@ -83,28 +90,28 @@ export default function StorefrontNav() {
 
         {authed ? (
           <>
-            {roles.includes('buyer') || roles.includes('admin') ? (
-              <Link href="/account" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-                Orders
+            {(roles.includes('buyer') || roles.includes('admin')) && (
+              <Link href="/account" className={`text-sm ${pathname.startsWith('/account') ? 'font-bold text-indigo-600' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'}`}>
+                {t('nav.myOrders')}
               </Link>
-            ) : null}
-            {roles.includes('seller') ? (
-              <Link href="/seller" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-                Seller
+            )}
+            {roles.includes('seller') && (
+              <Link href="/seller" className={`text-sm ${pathname.startsWith('/seller') ? 'font-bold text-indigo-600' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'}`}>
+                {t('nav.sellerCenter')}
               </Link>
-            ) : null}
-            {roles.includes('admin') ? (
-              <Link href="/admin" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-                Admin
+            )}
+            {roles.includes('admin') && (
+              <Link href="/admin" className={`text-sm ${pathname.startsWith('/admin') ? 'font-bold text-indigo-600' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'}`}>
+                {t('nav.adminCenter')}
               </Link>
-            ) : null}
+            )}
             <button onClick={handleLogout} className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400">
-              Logout
+              {t('nav.signOut')}
             </button>
           </>
         ) : (
-          <Link href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
-            Sign In
+          <Link href={loginUrl} className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+            {t('nav.signIn')}
           </Link>
         )}
       </div>

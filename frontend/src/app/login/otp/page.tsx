@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth, apiFetch } from '@/lib/auth'
+import { setAuth, apiFetch, getDefaultRedirect } from '@/lib/auth'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
 
@@ -38,8 +38,12 @@ export default function OtpLoginPage() {
       sessionStorage.removeItem('otp_login_password')
       setAuth(data.accessToken, data.refreshToken, data.username)
       const redirect = sessionStorage.getItem('login_redirect')
-      if (redirect) { sessionStorage.removeItem('login_redirect'); router.replace(redirect) }
-      else router.replace('/dashboard')
+      if (redirect) { 
+        sessionStorage.removeItem('login_redirect')
+        router.replace(redirect) 
+      } else {
+        router.replace(getDefaultRedirect())
+      }
     } catch { setError(locale === 'zh-CN' ? '请求失败' : 'Request failed') }
     finally { setLoading(false) }
   }

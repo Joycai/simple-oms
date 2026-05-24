@@ -161,12 +161,17 @@
                                     }
                      },
     "nav":  {
-                "signOut":  "退出登录",
+                "personal":  "账号管理",
+                "adminCenter":  "管理后台",
+                "operations":  "业务功能",
                 "sellerCenter":  "卖家中心",
+                "cart":  "购物车",
+                "overview":  "概览",
+                "signIn":  "登录",
+                "search":  "搜索...",
                 "shop":  "商店",
                 "myOrders":  "我的订单",
-                "cart":  "购物车",
-                "signIn":  "登录",
-                "adminCenter":  "管理后台"
+                "signOut":  "退出登录",
+                "management":  "系统管理"
             }
 }

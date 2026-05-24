@@ -1,11 +1,12 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import { logout, getUser, hasRole } from '@/lib/auth'
-import { LanguageToggle } from '@/components/LanguageToggle'
+import { LanguageToggle }
+import { UnifiedNav } from '@/components/LanguageToggle'
 
 const navGroups = [
   {
@@ -150,6 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="flex h-screen">
       <Sidebar collapsed={collapsed} />
       <div className="flex flex-1 flex-col overflow-hidden">
+        <UnifiedNav />
         <header className="flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-950">
           <button onClick={() => setCollapsed(!collapsed)}
             className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900">

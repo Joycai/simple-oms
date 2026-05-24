@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { isAuthenticated, getUser } from '@/lib/auth'
+import { isAuthenticated, getUser, getDefaultRedirect } from '@/lib/auth'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -30,7 +30,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true)
     if (isAuthenticated()) {
-      router.replace('/dashboard')
+      router.replace(getDefaultRedirect())
     }
   }, [router])
 

@@ -161,12 +161,17 @@
                                     }
                      },
     "nav":  {
-                "signOut":  "Sign Out",
+                "personal":  "Account Settings",
+                "adminCenter":  "Admin Center",
+                "operations":  "Operations",
                 "sellerCenter":  "Seller Center",
+                "cart":  "Cart",
+                "overview":  "Overview",
+                "signIn":  "Sign In",
+                "search":  "Search...",
                 "shop":  "Shop",
                 "myOrders":  "My Orders",
-                "cart":  "Cart",
-                "signIn":  "Sign In",
-                "adminCenter":  "Admin Center"
+                "signOut":  "Sign Out",
+                "management":  "Management"
             }
 }
