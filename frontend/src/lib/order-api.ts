@@ -27,7 +27,7 @@ export async function orderFetch(path: string, options: RequestInit = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   let res = await fetch(`${ORDER_API}${path}`, { ...options, headers })
-  if (res.status === 401 || res.status === 403) {
+  if (res.status === 401) {
     const refreshed = await tryRefresh()
     if (refreshed) {
       const newToken = getToken()
