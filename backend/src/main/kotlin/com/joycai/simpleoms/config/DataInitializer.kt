@@ -102,27 +102,47 @@ class DataInitializer {
             adminRole.permissions.addAll(permissionRepository.findAll())
             roleRepository.save(adminRole)
         }
-        if (!roleRepository.existsByName("user")) {
-            roleRepository.save(Role(name = "user", description = "普通用户"))
+        if (!roleRepository.existsByName("buyer")) {
+            val buyerRole = roleRepository.save(Role(name = "buyer", description = "买家"))
+            listOf("order:order:create", "order:order:read").forEach { code ->
+                permissionRepository.findByCode(code)?.let { buyerRole.permissions.add(it) }
+            }
+            roleRepository.save(buyerRole)
+        }
+        if (!roleRepository.existsByName("seller")) {
+            val sellerRole = roleRepository.save(Role(name = "seller", description = "卖家"))
+            listOf("order:order:read", "order:order:update", "order:order:cancel", "order:shipment:manage").forEach { code ->
+                permissionRepository.findByCode(code)?.let { sellerRole.permissions.add(it) }
+            }
+            roleRepository.save(sellerRole)
         }
     }
 
     @Bean
     @Order(3)
-    fun seedAdminUser(
+    fun seedUsers(
         userRepository: UserRepository,
         roleRepository: RoleRepository,
         passwordEncoder: PasswordEncoder,
     ) = CommandLineRunner {
+        val adminRole = roleRepository.findByName("admin")
+        val buyerRole = roleRepository.findByName("buyer")
+        val sellerRole = roleRepository.findByName("seller")
+
         if (!userRepository.existsByUsername("admin")) {
-            val adminRole = roleRepository.findByName("admin")
-            val admin = User(
-                username = "admin",
-                password = passwordEncoder.encode("admin123")!!,
-                email = "admin@simple-oms.local",
-            )
+            val admin = User(username = "admin", password = passwordEncoder.encode("admin123")!!, email = "admin@simple-oms.local")
             if (adminRole != null) admin.roles.add(adminRole)
             userRepository.save(admin)
+        }
+        if (!userRepository.existsByUsername("buyer")) {
+            val buyer = User(username = "buyer", password = passwordEncoder.encode("buyer123")!!)
+            if (buyerRole != null) buyer.roles.add(buyerRole)
+            userRepository.save(buyer)
+        }
+        if (!userRepository.existsByUsername("seller")) {
+            val seller = User(username = "seller", password = passwordEncoder.encode("seller123")!!)
+            if (sellerRole != null) seller.roles.add(sellerRole)
+            userRepository.save(seller)
         }
     }
 }

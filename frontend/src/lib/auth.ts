@@ -47,6 +47,13 @@ export function hasRole(role: string): boolean {
   return getRoles().includes(role)
 }
 
+export function getDefaultRedirect(): string {
+  const roles = getRoles()
+  if (roles.includes('admin')) return '/dashboard'
+  if (roles.includes('seller')) return '/seller'
+  return '/' // buyer or default → storefront
+}
+
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
