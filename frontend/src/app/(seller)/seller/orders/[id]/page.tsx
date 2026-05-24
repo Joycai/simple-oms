@@ -71,7 +71,7 @@ export default function SellerOrderDetailPage() {
                     </div>
                     <div className="mt-1 flex justify-between">
                       <span className="text-slate-500">{t('orderService.account.shippedAt')}</span>
-                      <span>{new Date(s.createdAt).toLocaleString()}</span>
+                      <span>{s.shippedAt ? new Date(s.shippedAt).toLocaleString() : '-'}</span>
                     </div>
                   </div>
                 ))}
