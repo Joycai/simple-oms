@@ -104,8 +104,12 @@ export async function checkout() {
   return safeJson(res)
 }
 
-export async function fetchBuyerOrders() {
-  const res = await orderFetch('/orders')
+export async function fetchBuyerOrders(params?: { status?: string; dateFrom?: string; dateTo?: string }) {
+  const qs = new URLSearchParams()
+  if (params?.status) qs.set('status', params.status)
+  if (params?.dateFrom) qs.set('dateFrom', params.dateFrom)
+  if (params?.dateTo) qs.set('dateTo', params.dateTo)
+  const res = await orderFetch(`/orders?${qs}`)
   return safeJson(res)
 }
 
@@ -136,8 +140,12 @@ export async function updateItem(id: number, data: Record<string, unknown>) {
   return safeJson(res)
 }
 
-export async function fetchSellerOrders() {
-  const res = await orderFetch('/seller/orders')
+export async function fetchSellerOrders(params?: { status?: string; dateFrom?: string; dateTo?: string }) {
+  const qs = new URLSearchParams()
+  if (params?.status) qs.set('status', params.status)
+  if (params?.dateFrom) qs.set('dateFrom', params.dateFrom)
+  if (params?.dateTo) qs.set('dateTo', params.dateTo)
+  const res = await orderFetch(`/seller/orders?${qs}`)
   return safeJson(res)
 }
 
