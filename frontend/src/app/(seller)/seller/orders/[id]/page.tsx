@@ -93,7 +93,7 @@ export default function SellerOrderDetailPage() {
               <div className="text-sm">{new Date(order.createdAt).toLocaleDateString()}</div>
             </div>
             <div className="pt-4 border-t space-y-2">
-              {order.paymentStatus === 'PENDING' && (
+              {(order.status === 'PENDING_PAYMENT' || order.paymentStatus === 'unpaid') && (
                 <button onClick={handleMarkPaid} className="w-full rounded bg-emerald-600 py-2 text-xs font-medium text-white hover:bg-emerald-700">{t('orderService.seller.confirmPayment')}</button>
               )}
               {order.status === 'PAID' && (

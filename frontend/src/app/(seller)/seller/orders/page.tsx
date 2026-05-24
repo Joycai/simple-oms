@@ -58,7 +58,7 @@ export default function SellerOrdersPage() {
                 <span className="font-bold text-slate-900 dark:text-slate-100">¥{o.totalAmount}</span>
               </div>
               <div className="flex gap-2">
-                {o.paymentStatus === 'PENDING' && (
+                {o.status === 'PENDING_PAYMENT' && (
                   <button onClick={() => handleMarkPaid(o.id)}
                     className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700">{t('orderService.seller.confirmPayment')}</button>
                 )}
