@@ -128,7 +128,7 @@ class WebAuthnService(
         if (!result.isSuccess) return null
 
         // Update signature count
-        val cred = credentialRepository.findByCredentialId(result.credentialId.base64Url)
+        val cred = credentialRepository.findByCredentialId(result.credential.credentialId.base64Url)
         if (cred != null) {
             cred.signatureCount = result.signatureCount
             cred.lastUsedAt = Instant.now()
