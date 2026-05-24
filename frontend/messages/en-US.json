@@ -71,12 +71,6 @@
                         "selectRole":  "Select Role",
                         "save":  "Save Permissions"
                     },
-    "nav":  {
-                "overview":  "OVERVIEW",
-                "management":  "MANAGEMENT",
-                "operations":  "OPERATIONS",
-                "personal":  "PERSONAL"
-            },
     "language":  {
                      "switch":  "中文",
                      "label":  "Language"
@@ -165,5 +159,14 @@
                                         "noOrders":  "No orders found.",
                                         "viewDetails":  "View Details"
                                     }
-                     }
+                     },
+    "nav":  {
+                "signOut":  "Sign Out",
+                "sellerCenter":  "Seller Center",
+                "shop":  "Shop",
+                "myOrders":  "My Orders",
+                "cart":  "Cart",
+                "signIn":  "Sign In",
+                "adminCenter":  "Admin Center"
+            }
 }

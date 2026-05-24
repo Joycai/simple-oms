@@ -71,12 +71,6 @@
                         "selectRole":  "选择角色",
                         "save":  "保存权限"
                     },
-    "nav":  {
-                "overview":  "概览",
-                "management":  "管理功能",
-                "operations":  "业务功能",
-                "personal":  "个人中心"
-            },
     "language":  {
                      "switch":  "English",
                      "label":  "语言"
@@ -165,5 +159,14 @@
                                         "noOrders":  "暂无收到订单",
                                         "viewDetails":  "查看详情"
                                     }
-                     }
+                     },
+    "nav":  {
+                "signOut":  "退出登录",
+                "sellerCenter":  "卖家中心",
+                "shop":  "商店",
+                "myOrders":  "我的订单",
+                "cart":  "购物车",
+                "signIn":  "登录",
+                "adminCenter":  "管理后台"
+            }
 }
