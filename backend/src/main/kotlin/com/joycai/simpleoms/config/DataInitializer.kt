@@ -129,16 +129,25 @@ class DataInitializer {
         val buyerRole = roleRepository.findByName("buyer")
         val sellerRole = roleRepository.findByName("seller")
 
-        if (!userRepository.existsByUsername("admin")) {
+        // Ensure admin user exists and has admin role
+        userRepository.findByUsername("admin")?.let { admin ->
+            if (adminRole != null && admin.roles.none { it.name == "admin" }) {
+                admin.roles.add(adminRole)
+                userRepository.save(admin)
+            }
+        } ?: run {
             val admin = User(username = "admin", password = passwordEncoder.encode("admin123")!!, email = "admin@simple-oms.local")
             if (adminRole != null) admin.roles.add(adminRole)
             userRepository.save(admin)
         }
+
+        // Ensure buyer user exists
         if (!userRepository.existsByUsername("buyer")) {
             val buyer = User(username = "buyer", password = passwordEncoder.encode("buyer123")!!)
             if (buyerRole != null) buyer.roles.add(buyerRole)
             userRepository.save(buyer)
         }
+        // Ensure seller user exists
         if (!userRepository.existsByUsername("seller")) {
             val seller = User(username = "seller", password = passwordEncoder.encode("seller123")!!)
             if (sellerRole != null) seller.roles.add(sellerRole)

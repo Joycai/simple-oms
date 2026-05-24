@@ -55,6 +55,7 @@ class RoleController(
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     fun delete(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
         val role = roleRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
