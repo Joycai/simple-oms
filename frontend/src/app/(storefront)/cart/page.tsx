@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { fetchCart, updateCartItem, removeCartItem, checkout } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 
 export default function CartPage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const router = useRouter()
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,6 +37,10 @@ export default function CartPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <Link href="/" className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 transition-colors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        {locale === 'zh-CN' ? '继续购物' : 'Continue Shopping'}
+      </Link>
       <h1 className="mb-6 font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">{t('orderService.cart.title')}</h1>
       {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-950/50 dark:text-red-400">{error}</div>}
       {items.length === 0 ? (
