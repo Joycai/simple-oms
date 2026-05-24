@@ -3,10 +3,22 @@
 import { useState, useEffect, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useI18n } from '@/lib/i18n'
-import { setAuth, apiFetch, getDefaultRedirect } from '@/lib/auth'
+import { setAuth, apiFetch } from '@/lib/auth'
 import { startAuthentication } from '@simplewebauthn/browser'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { GuestGuard } from '@/components/AuthGuard'
+
+function getDefaultRedirect(): string {
+  try {
+    const token = localStorage.getItem('access_token')
+    if (!token) return '/'
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const roles: string[] = payload.roles || []
+    if (roles.includes('admin')) return '/dashboard'
+    if (roles.includes('seller')) return '/seller'
+  } catch {}
+  return '/'
+}
 
 function EyeIcon({ open }: { open: boolean }) {
   return open ? (

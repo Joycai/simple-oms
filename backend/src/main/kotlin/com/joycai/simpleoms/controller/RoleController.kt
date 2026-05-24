@@ -55,12 +55,14 @@ class RoleController(
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('admin')")
     fun delete(@PathVariable id: Long): ResponseEntity<Map<String, String>> {
         val role = roleRepository.findById(id).orElse(null)
             ?: return ResponseEntity.notFound().build()
         if (role.name == "admin") return ResponseEntity.badRequest().body(mapOf("message" to "admin 角色不可删除"))
-        roleRepository.deleteById(id)
+        role.users.clear()
+        roleRepository.save(role)
+        roleRepository.delete(role)
         return ResponseEntity.ok(mapOf("message" to "已删除"))
     }
 
