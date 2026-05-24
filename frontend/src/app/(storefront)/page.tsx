@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { fetchItems, fetchCategories } from '@/lib/order-api'
+import { useI18n } from '@/lib/i18n'
 
 export default function StorefrontPage() {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const [items, setItems] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
@@ -30,15 +32,15 @@ export default function StorefrontPage() {
     <div>
       <div className="mb-6">
         <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">
-          {catName || 'All Items'}
+          {catName || t('orderService.storefront.all')}
         </h1>
-        {keyword && <p className="mt-1 text-sm text-slate-500">Search: &ldquo;{keyword}&rdquo;</p>}
+        {keyword && <p className="mt-1 text-sm text-slate-500">{t('login.username')}: &ldquo;{keyword}&rdquo;</p>}
       </div>
 
       {/* Category pills */}
       <div className="mb-6 flex flex-wrap gap-2">
         <Link href="/" className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-200">
-          All
+          {t('orderService.storefront.all')}
         </Link>
         {categories.flatMap(c => [c, ...(c.children || [])]).map(cat => (
           <Link key={cat.id} href={`/?categoryId=${cat.id}`}
@@ -62,7 +64,9 @@ export default function StorefrontPage() {
                 ¥{item.price}
               </span>
               <span className={`text-xs ${item.quantity > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                {item.quantity > 0 ? `${item.quantity} in stock` : 'Sold out'}
+                {item.quantity > 0 
+                  ? t('orderService.storefront.inStock', { count: item.quantity.toString() }) 
+                  : t('orderService.storefront.outOfStock')}
               </span>
             </div>
           </Link>
@@ -70,7 +74,7 @@ export default function StorefrontPage() {
       </div>
 
       {items.length === 0 && (
-        <div className="py-20 text-center text-slate-400">No items found</div>
+        <div className="py-20 text-center text-slate-400">{t('orderService.storefront.noItems')}</div>
       )}
     </div>
   )

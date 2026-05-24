@@ -1,92 +1,61 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { fetchSellerItems, createItem, fetchCategories } from '@/lib/order-api'
+import { fetchSellerItems } from '@/lib/order-api'
+import { useI18n } from '@/lib/i18n'
 
-export default function SellerDashboardPage() {
+export default function SellerInventoryPage() {
+  const { t } = useI18n()
   const [items, setItems] = useState<any[]>([])
-  const [categories, setCategories] = useState<any[]>([])
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', description: '', brand: '', location: '', price: '', quantity: '1', categoryId: '' })
-  const [msg, setMsg] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchSellerItems().then(setItems).catch(() => {})
-    fetchCategories().then((cats: any[]) => {
-      setCategories(cats.flatMap((c: any) => [c, ...(c.children || [])]))
-    }).catch(() => {})
-  }, [])
+  useEffect(() => { load() }, [])
 
-  async function handleCreate(e: React.FormEvent) {
-    e.preventDefault(); setMsg('')
-    try {
-      await createItem({
-        name: form.name,
-        description: form.description,
-        brand: form.brand,
-        location: form.location,
-        price: form.price,
-        quantity: Number(form.quantity),
-        categoryId: Number(form.categoryId),
-      })
-      setShowForm(false)
-      setForm({ name: '', description: '', brand: '', location: '', price: '', quantity: '1', categoryId: '' })
-      fetchSellerItems().then(setItems)
-      setMsg('Item created!')
-    } catch { setMsg('Failed to create item') }
+  async function load() {
+    try { setItems(await fetchSellerItems()) } finally { setLoading(false) }
   }
 
+  if (loading) return <div className="py-20 text-center text-slate-400">{t('login.loggingIn')}</div>
+
   return (
-    <div>
+    <div className="mx-auto max-w-5xl">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">My Items</h1>
-        <button onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-900">
-          {showForm ? 'Cancel' : '+ New Item'}
+        <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">{t('orderService.seller.inventory')}</h1>
+        <button className="rounded-lg bg-indigo-950 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-900">
+          {t('orderService.seller.addItem')}
         </button>
       </div>
 
-      {msg && <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">{msg}</div>}
-
-      {showForm && (
-        <form onSubmit={handleCreate} className="mb-6 rounded-xl border bg-white p-4 space-y-3 dark:bg-slate-900 dark:border-slate-800">
-          <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Item name" required
-            className="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-          <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Description"
-            className="w-full rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-          <div className="grid grid-cols-3 gap-3">
-            <input value={form.brand} onChange={e => setForm({...form, brand: e.target.value})} placeholder="Brand"
-              className="rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-            <input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="Location"
-              className="rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-            <select value={form.categoryId} onChange={e => setForm({...form, categoryId: e.target.value})} required
-              className="rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
-              <option value="">Category</option>
-              {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <input value={form.price} onChange={e => setForm({...form, price: e.target.value})} placeholder="Price" type="number" step="0.01" required
-              className="rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-            <input value={form.quantity} onChange={e => setForm({...form, quantity: e.target.value})} placeholder="Quantity" type="number" required
-              className="rounded-lg border px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-            <button type="submit" className="rounded-lg bg-indigo-950 text-sm font-medium text-white hover:bg-indigo-900">Create</button>
-          </div>
-        </form>
-      )}
-
-      <div className="space-y-2">
-        {items.map((item: any) => (
-          <div key={item.id} className="flex items-center justify-between rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
-            <div>
-              <div className="font-medium text-slate-900 dark:text-slate-100">{item.name}</div>
-              <div className="text-sm text-slate-500">¥{item.price} &middot; Stock: {item.quantity} &middot; {item.status}</div>
-            </div>
-            <Link href={`/seller/items/${item.id}`}
-              className="text-sm text-indigo-600 hover:text-indigo-800">Edit</Link>
-          </div>
-        ))}
+      <div className="overflow-hidden rounded-xl border bg-white dark:bg-slate-900 dark:border-slate-800">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-800">
+            <tr>
+              <th className="px-6 py-3">Item</th>
+              <th className="px-6 py-3">{t('orderService.seller.price')}</th>
+              <th className="px-6 py-3">{t('orderService.seller.stock')}</th>
+              <th className="px-6 py-3">{t('orderService.seller.status')}</th>
+              <th className="px-6 py-3 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y dark:divide-slate-800">
+            {items.map((item: any) => (
+              <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{item.name}</td>
+                <td className="px-6 py-4">¥{item.price}</td>
+                <td className="px-6 py-4">{item.quantity}</td>
+                <td className="px-6 py-4">
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${item.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+                    {item.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <button className="text-indigo-600 hover:text-indigo-900 font-medium">{t('orderService.seller.edit')}</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {items.length === 0 && <div className="py-20 text-center text-slate-400">{t('orderService.seller.noItems')}</div>}
       </div>
     </div>
   )

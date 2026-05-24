@@ -33,9 +33,8 @@ export default function RolesPage() {
     const token = getToken()
     const url = editRole ? `/roles/${editRole.id}` : '/roles'
     const method = editRole ? 'PUT' : 'POST'
-    const res = await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: nameInput.trim(), description: descInput.trim() || null }),
+    const res = await apiFetch(url, {
+      method, body: JSON.stringify({ name: nameInput.trim(), description: descInput.trim() || null }),
     })
     if (!res.ok) { const data = await res.json(); setError(data.message || '操作失败'); return }
     resetForm(); loadRoles()

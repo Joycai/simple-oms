@@ -92,5 +92,78 @@
                      "remove":  "Remove",
                      "title":  "Passkeys",
                      "error":  "Registration failed"
-                 }
+                 },
+    "orderService":  {
+                         "storefront":  {
+                                            "noItems":  "No items found",
+                                            "buyNow":  "Buy Now",
+                                            "specs":  "Specifications",
+                                            "outOfStock":  "Sold out",
+                                            "searchPlaceholder":  "Search items, brands...",
+                                            "all":  "All Items",
+                                            "sellerInfo":  "Seller Info",
+                                            "inStock":  "{count} in stock",
+                                            "addToCart":  "Add to Cart",
+                                            "brand":  "Brand",
+                                            "location":  "Location",
+                                            "category":  "Category",
+                                            "addedToCart":  "Added to cart"
+                                        },
+                         "account":  {
+                                         "orderId":  "Order ID",
+                                         "title":  "Buyer Center",
+                                         "confirmReceipt":  "Confirm Receipt",
+                                         "status":  {
+                                                        "shipped":  "Shipped",
+                                                        "shipping":  "Wait to Ship",
+                                                        "delivered":  "Delivered",
+                                                        "completed":  "Completed",
+                                                        "cancelled":  "Cancelled",
+                                                        "pending_payment":  "Pending Payment",
+                                                        "paid":  "Paid"
+                                                    },
+                                         "myOrders":  "My Orders",
+                                         "receiptConfirmed":  "Receipt confirmed",
+                                         "total":  "Total",
+                                         "date":  "Date",
+                                         "shippingInfo":  "Shipping Info",
+                                         "trackingNo":  "Tracking #",
+                                         "shippedAt":  "Shipped at",
+                                         "deliveredAt":  "Delivered at",
+                                         "noShipmentYet":  "No shipment info yet.",
+                                         "paymentInstructions":  "Please pay offline and wait for seller confirmation.",
+                                         "details":  "Order Details",
+                                         "noOrders":  "No orders found."
+                                     },
+                         "cart":  {
+                                      "checkout":  "Checkout (Offline Pay)",
+                                      "offlineNotice":  "Payment is offline — contact the seller after placing your order.",
+                                      "failedToLoad":  "Failed to load cart",
+                                      "title":  "Shopping Cart",
+                                      "remove":  "Remove",
+                                      "total":  "Total",
+                                      "empty":  "Your cart is empty",
+                                      "checkoutFailed":  "Checkout failed"
+                                  },
+                         "seller":  {
+                                        "editItem":  "Edit Item",
+                                        "confirmPayment":  "Confirm Payment",
+                                        "addItem":  "Add Item",
+                                        "ship":  "Ship Now",
+                                        "markPaidSuccess":  "Payment confirmed",
+                                        "trackingNumber":  "Tracking Number",
+                                        "inventory":  "Inventory",
+                                        "orders":  "Orders",
+                                        "shipSuccess":  "Shipped successfully",
+                                        "title":  "Seller Center",
+                                        "trackingPlaceholder":  "Enter tracking number",
+                                        "price":  "Price",
+                                        "stock":  "Stock",
+                                        "status":  "Status",
+                                        "edit":  "Edit",
+                                        "noItems":  "No items found.",
+                                        "noOrders":  "No orders found.",
+                                        "viewDetails":  "View Details"
+                                    }
+                     }
 }

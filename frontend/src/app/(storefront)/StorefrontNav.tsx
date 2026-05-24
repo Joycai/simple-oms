@@ -55,7 +55,7 @@ export function StorefrontNav() {
         {/* Search */}
         <form onSubmit={search} className="hidden sm:block">
           <input value={keyword} onChange={e => setKeyword(e.target.value)}
-            placeholder="Search items..."
+            placeholder={t('orderService.storefront.searchPlaceholder')}
             className="w-48 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
         </form>
 
@@ -74,13 +74,13 @@ export function StorefrontNav() {
 
         {/* User */}
         <Link href="/account" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          Account
+          {t('orderService.account.title')}
         </Link>
         <Link href="/seller" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          Sell
+          {t('orderService.seller.title')}
         </Link>
         <Link href="/dashboard" className="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400">
-          Admin
+          {t('login.management')}
         </Link>
       </div>
     </nav>

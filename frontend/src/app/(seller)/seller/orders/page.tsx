@@ -3,69 +3,78 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { fetchSellerOrders, markPaid, shipOrder } from '@/lib/order-api'
+import { useI18n } from '@/lib/i18n'
 
 export default function SellerOrdersPage() {
+  const { t } = useI18n()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [msg, setMsg] = useState('')
 
-  useEffect(() => {
-    fetchSellerOrders().then(setOrders).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  useEffect(() => { load() }, [])
+
+  async function load() {
+    try { setOrders(await fetchSellerOrders()) } finally { setLoading(false) }
+  }
 
   async function handleMarkPaid(id: number) {
-    try { await markPaid(id); setMsg('Marked as paid'); load() } catch { setMsg('Failed') }
+    await markPaid(id)
+    load()
   }
 
   async function handleShip(id: number) {
-    const tracking = prompt('Tracking number:')
-    if (!tracking) return
-    try { await shipOrder(id, tracking); setMsg('Shipped!'); load() } catch { setMsg('Failed') }
+    const tracking = prompt(t('orderService.seller.trackingPlaceholder'))
+    if (tracking) {
+      await shipOrder(id, tracking)
+      load()
+    }
   }
 
-  function load() { fetchSellerOrders().then(setOrders) }
-
-  if (loading) return <div className="py-20 text-center text-slate-400">Loading...</div>
+  if (loading) return <div className="py-20 text-center text-slate-400">{t('login.loggingIn')}</div>
 
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">Seller Orders</h1>
-        <Link href="/seller" className="text-sm text-indigo-600 hover:text-indigo-800">&larr; My Items</Link>
-      </div>
-      {msg && <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400">{msg}</div>}
-
-      <div className="space-y-3">
+    <div className="mx-auto max-w-5xl">
+      <h1 className="mb-6 font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">{t('orderService.seller.orders')}</h1>
+      
+      <div className="space-y-4">
         {orders.map((o: any) => (
           <div key={o.id} className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between border-b pb-3 mb-3">
               <div>
-                <div className="font-medium text-slate-900 dark:text-slate-100">Order #{o.id}</div>
-                <div className="text-sm text-slate-500">Buyer: {o.buyerId} &middot; ¥{o.totalAmount}</div>
-                <div className="text-xs text-slate-400">{new Date(o.createdAt).toLocaleDateString()}</div>
+                <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">{t('orderService.account.orderId')}</span>
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100">#{o.id}</div>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                o.status === 'PENDING_PAYMENT' ? 'bg-amber-100 text-amber-700' :
-                o.status === 'PAID' ? 'bg-blue-100 text-blue-700' :
-                'bg-emerald-100 text-emerald-700'
-              }`}>{o.status}</span>
+              <div className="flex gap-2">
+                <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {o.paymentStatus}
+                </div>
+                <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                   {t('orderService.account.status.' + o.status.toLowerCase())}
+                </div>
+              </div>
             </div>
-            <div className="mt-3 flex gap-2">
-              {o.status === 'PENDING_PAYMENT' && (
-                <button onClick={() => handleMarkPaid(o.id)}
-                  className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700">
-                  Mark as Paid
-                </button>
-              )}
-              {o.status === 'PAID' && (
-                <button onClick={() => handleShip(o.id)}
-                  className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">
-                  Ship
-                </button>
-              )}
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <span className="text-slate-500">{t('orderService.account.total')}: </span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">¥{o.totalAmount}</span>
+              </div>
+              <div className="flex gap-2">
+                {o.paymentStatus === 'PENDING' && (
+                  <button onClick={() => handleMarkPaid(o.id)}
+                    className="rounded bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700">{t('orderService.seller.confirmPayment')}</button>
+                )}
+                {o.status === 'PAID' && (
+                  <button onClick={() => handleShip(o.id)}
+                    className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">{t('orderService.seller.ship')}</button>
+                )}
+                <Link href={`/seller/orders/${o.id}`}
+                  className="rounded border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">
+                  {t('orderService.seller.viewDetails')}
+                </Link>
+              </div>
             </div>
           </div>
         ))}
+        {orders.length === 0 && <div className="py-20 text-center text-slate-400">{t('orderService.seller.noOrders')}</div>}
       </div>
     </div>
   )

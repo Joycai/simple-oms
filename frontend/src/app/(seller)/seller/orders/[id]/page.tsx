@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { fetchOrder } from '@/lib/order-api'
+import { fetchOrder, markPaid, shipOrder } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 
-export default function OrderDetailPage() {
+export default function SellerOrderDetailPage() {
   const { t } = useI18n()
   const { id } = useParams()
   const [order, setOrder] = useState<any>(null)
@@ -14,6 +14,19 @@ export default function OrderDetailPage() {
   useEffect(() => {
     fetchOrder(Number(id)).then(setOrder).finally(() => setLoading(false))
   }, [id])
+
+  async function handleMarkPaid() {
+    await markPaid(order.id)
+    fetchOrder(order.id).then(setOrder)
+  }
+
+  async function handleShip() {
+    const tracking = prompt(t('orderService.seller.trackingPlaceholder'))
+    if (tracking) {
+      await shipOrder(order.id, tracking)
+      fetchOrder(order.id).then(setOrder)
+    }
+  }
 
   if (loading) return <div className="py-20 text-center text-slate-400">{t('login.loggingIn')}</div>
   if (!order) return <div className="py-20 text-center text-slate-400">{t('orderService.storefront.noItems')}</div>
@@ -27,7 +40,6 @@ export default function OrderDetailPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-2 space-y-6">
-          {/* Items */}
           <div className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
             <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">{t('login.management')}</h3>
             <div className="divide-y">
@@ -47,7 +59,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Shipment */}
           <div className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
             <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">{t('orderService.account.shippingInfo')}</h3>
             {order.shipments?.length > 0 ? (
@@ -72,19 +83,22 @@ export default function OrderDetailPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Info Card */}
           <div className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
             <div className="mb-4">
-              <label className="text-[10px] font-bold text-slate-400 uppercase">{t('login.username')}</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase">{t('orderService.seller.status')}</label>
               <div className="text-sm font-bold text-indigo-700">{t('orderService.account.status.' + order.status.toLowerCase())}</div>
             </div>
             <div className="mb-4">
               <label className="text-[10px] font-bold text-slate-400 uppercase">{t('orderService.account.date')}</label>
               <div className="text-sm">{new Date(order.createdAt).toLocaleDateString()}</div>
             </div>
-            <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase">Offline Payment</label>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">{t('orderService.account.paymentInstructions')}</p>
+            <div className="pt-4 border-t space-y-2">
+              {order.paymentStatus === 'PENDING' && (
+                <button onClick={handleMarkPaid} className="w-full rounded bg-emerald-600 py-2 text-xs font-medium text-white hover:bg-emerald-700">{t('orderService.seller.confirmPayment')}</button>
+              )}
+              {order.status === 'PAID' && (
+                <button onClick={handleShip} className="w-full rounded bg-indigo-600 py-2 text-xs font-medium text-white hover:bg-indigo-700">{t('orderService.seller.ship')}</button>
+              )}
             </div>
           </div>
         </div>

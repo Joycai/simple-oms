@@ -3,58 +3,93 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { fetchItem, addToCart } from '@/lib/order-api'
+import { useI18n } from '@/lib/i18n'
 
 export default function ItemDetailPage() {
-  const { id } = useParams<{ id: string }>()
+  const { t } = useI18n()
+  const { id } = useParams()
   const router = useRouter()
   const [item, setItem] = useState<any>(null)
-  const [qty, setQty] = useState(1)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [quantity, setQuantity] = useState(1)
   const [msg, setMsg] = useState('')
 
   useEffect(() => {
-    fetchItem(Number(id)).then(setItem).catch(() => {})
+    fetchItem(Number(id)).then(setItem).finally(() => setLoading(false))
   }, [id])
 
   async function handleAddToCart() {
-    setLoading(true); setMsg('')
-    try {
-      await addToCart(item.id, qty)
-      const stored = sessionStorage.getItem('cart_count')
-      sessionStorage.setItem('cart_count', String((Number(stored) || 0) + qty))
-      setMsg('Added to cart!')
-      setTimeout(() => setMsg(''), 2000)
-    } catch { setMsg('Failed') }
-    finally { setLoading(false) }
+    await addToCart(item.id, quantity)
+    setMsg(t('orderService.storefront.addedToCart'))
+    sessionStorage.setItem('cart_count', (Number(sessionStorage.getItem('cart_count') || 0) + quantity).toString())
+    setTimeout(() => setMsg(''), 2000)
   }
 
-  if (!item) return <div className="py-20 text-center text-slate-400">Loading...</div>
+  async function handleBuyNow() {
+    await addToCart(item.id, quantity)
+    router.push('/cart')
+  }
+
+  if (loading) return <div className="py-20 text-center text-slate-400">{t('login.loggingIn')}</div>
+  if (!item) return <div className="py-20 text-center text-slate-400">{t('orderService.storefront.noItems')}</div>
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <button onClick={() => router.back()} className="mb-4 text-sm text-indigo-600 hover:text-indigo-800">&larr; Back</button>
-      <div className="rounded-xl border bg-white p-6 dark:bg-slate-900 dark:border-slate-800">
-        <h1 className="font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">{item.name}</h1>
-        <p className="mt-2 text-sm text-slate-500">{item.description || 'No description'}</p>
-        <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-slate-400">Brand:</span> {item.brand || '-'}</div>
-          <div><span className="text-slate-400">Location:</span> {item.location || '-'}</div>
-          <div><span className="text-slate-400">Status:</span> {item.status}</div>
-          <div><span className="text-slate-400">Stock:</span> {item.quantity}</div>
+    <div className="mx-auto max-w-4xl">
+      <div className="grid gap-8 md:grid-cols-2">
+        <div className="aspect-square rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+          Image Placeholder
         </div>
-        <div className="mt-6 flex items-center gap-4">
-          <span className="text-3xl font-bold text-indigo-950 dark:text-indigo-300">¥{item.price}</span>
-          <div className="flex items-center gap-1">
-            <button onClick={() => setQty(Math.max(1, qty - 1))} className="rounded border px-2 py-1 text-sm">-</button>
-            <span className="w-8 text-center text-sm">{qty}</span>
-            <button onClick={() => setQty(Math.min(item.quantity, qty + 1))} className="rounded border px-2 py-1 text-sm">+</button>
+
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-slate-900 dark:text-slate-50">{item.name}</h1>
+          <p className="mt-2 text-lg text-indigo-600 font-bold">¥{item.price}</p>
+          
+          <div className="mt-6 space-y-4">
+            <div>
+              <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{t('orderService.storefront.specs')}</h3>
+              <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                <div className="text-slate-500">{t('orderService.storefront.brand')}</div>
+                <div className="text-slate-900 dark:text-slate-300">{item.brand || '-'}</div>
+                <div className="text-slate-500">{t('orderService.storefront.location')}</div>
+                <div className="text-slate-900 dark:text-slate-300">{item.location || '-'}</div>
+                <div className="text-slate-500">{t('orderService.storefront.category')}</div>
+                <div className="text-slate-900 dark:text-slate-300">{item.categoryName || '-'}</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">{t('orderService.storefront.sellerInfo')}</h3>
+              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{item.sellerName || 'Verified Seller'}</p>
+            </div>
+
+            <div className="pt-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="rounded border px-3 py-1">-</button>
+                  <span className="w-8 text-center">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="rounded border px-3 py-1">+</button>
+                </div>
+                <span className={`text-sm ${item.quantity > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {item.quantity > 0 
+                    ? t('orderService.storefront.inStock', { count: item.quantity.toString() }) 
+                    : t('orderService.storefront.outOfStock')}
+                </span>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button onClick={handleAddToCart} disabled={item.quantity === 0}
+                  className="flex-1 rounded-lg border-2 border-indigo-950 py-3 text-sm font-medium text-indigo-950 hover:bg-indigo-50 disabled:opacity-50 dark:border-indigo-300 dark:text-indigo-300">
+                  {t('orderService.storefront.addToCart')}
+                </button>
+                <button onClick={handleBuyNow} disabled={item.quantity === 0}
+                  className="flex-1 rounded-lg bg-indigo-950 py-3 text-sm font-medium text-white hover:bg-indigo-900 disabled:opacity-50">
+                  {t('orderService.storefront.buyNow')}
+                </button>
+              </div>
+              {msg && <p className="mt-2 text-center text-sm text-emerald-600">{msg}</p>}
+            </div>
           </div>
-          <button onClick={handleAddToCart} disabled={loading || item.quantity === 0}
-            className="rounded-lg bg-indigo-950 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-900 disabled:opacity-50">
-            {loading ? 'Adding...' : 'Add to Cart'}
-          </button>
         </div>
-        {msg && <div className="mt-3 text-sm text-emerald-600">{msg}</div>}
       </div>
     </div>
   )
