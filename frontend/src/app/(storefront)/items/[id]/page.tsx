@@ -47,10 +47,12 @@ export default function ItemDetailPage() {
   return (
     <div className="mx-auto max-w-5xl">
       {/* Breadcrumb */}
-      <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 transition-colors">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-        {locale === 'zh-CN' ? '返回首页' : 'Back to Store'}
-      </Link>
+      <nav className="mb-6 flex items-center gap-1.5 text-sm text-slate-500">
+        <Link href="/" className="hover:text-indigo-600">Home</Link>
+        {item.categoryL1Name && (<><span>/</span><Link href={`/?categoryId=${item.categoryL1Id}`} className="hover:text-indigo-600">{item.categoryL1Name}</Link></>)}
+        {item.categoryName && (<><span>/</span><Link href={`/?categoryId=${item.categoryId}`} className="hover:text-indigo-600">{item.categoryName}</Link></>)}
+        <span>/</span><span className="text-slate-900 dark:text-slate-300">{item.name}</span>
+      </nav>
       <div className="grid gap-12 md:grid-cols-2">
         {/* Image Gallery */}
         <div className="space-y-4">
