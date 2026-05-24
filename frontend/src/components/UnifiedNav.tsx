@@ -22,13 +22,16 @@ export function UnifiedNav() {
     if (token) {
       try {
         const cart = await fetchCart()
-        setCartCount(cart?.length || 0)
+        const items = Array.isArray(cart) ? cart : (cart?.items || [])
+        setCartCount(items.length)
       } catch {
         setCartCount(0)
       }
     } else {
-      const stored = sessionStorage.getItem('cart_count')
-      setCartCount(stored ? Number(stored) : 0)
+      setCartCount(0)
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('cart_count')
+      }
     }
   }, [])
 
@@ -42,7 +45,6 @@ export function UnifiedNav() {
       setRoles(getRoles())
     }
 
-    // Listen for custom cart updates
     window.addEventListener('cart-updated', syncCart)
     return () => window.removeEventListener('cart-updated', syncCart)
   }, [syncCart])
