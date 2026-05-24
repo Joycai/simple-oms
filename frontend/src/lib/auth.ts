@@ -47,13 +47,6 @@ export function hasRole(role: string): boolean {
   return getRoles().includes(role)
 }
 
-export function getDefaultRedirect(): string {
-  const roles = getRoles()
-  if (roles.includes('admin')) return '/dashboard'
-  if (roles.includes('seller')) return '/seller'
-  return '/' // buyer or default → storefront
-}
-
 async function tryRefreshToken(): Promise<boolean> {
   const refreshToken = getRefreshToken()
   if (!refreshToken) return false
@@ -79,9 +72,13 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     ...options.headers,
   }
   if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`    
   }
-  let res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+  
+  const url = `${API_BASE}${path}`
+  console.log(`[apiFetch] Calling: ${url}`)
+  
+  let res = await fetch(url, { ...options, headers })
   // On 401/403, try refresh once
   if (res.status === 401 || res.status === 403) {
     const refreshed = await tryRefreshToken()
@@ -90,14 +87,14 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
       if (newToken) {
         (headers as Record<string, string>)['Authorization'] = `Bearer ${newToken}`
       }
-      res = await fetch(`${API_BASE}${path}`, { ...options, headers })
+      res = await fetch(url, { ...options, headers })
     } else {
       // Token expired, redirect to login
       clearAuth()
       window.dispatchEvent(new Event('auth-expired'))
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        sessionStorage.setItem('login_message', '登录已过期，请重新登录')
-        sessionStorage.setItem('login_redirect', window.location.pathname)
+        sessionStorage.setItem('login_message', '登录已过期，请重新登录')       
+        sessionStorage.setItem('login_redirect', window.location.pathname)      
         window.location.href = '/login'
       }
     }
