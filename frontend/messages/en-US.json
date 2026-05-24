@@ -1,4 +1,4 @@
-{
+﻿{
     "login":  {
                   "title":  "simple-oms",
                   "subtitle":  "Sign in to your account",
@@ -114,7 +114,8 @@
                                                         "completed":  "Completed",
                                                         "cancelled":  "Cancelled",
                                                         "pending_payment":  "Pending Payment",
-                                                        "paid":  "Paid"
+                                                        "paid":  "Paid",
+                                                        "unpaid":  "Unpaid"
                                                     },
                                          "myOrders":  "My Orders",
                                          "receiptConfirmed":  "Receipt confirmed",

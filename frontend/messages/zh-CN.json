@@ -1,4 +1,4 @@
-{
+﻿{
     "login":  {
                   "title":  "simple-oms",
                   "subtitle":  "登录您的账户",
@@ -114,7 +114,8 @@
                                                         "completed":  "已完成",
                                                         "cancelled":  "已取消",
                                                         "pending_payment":  "待付款",
-                                                        "paid":  "已付款"
+                                                        "paid":  "已付款",
+                                                        "unpaid":  "待付款"
                                                     },
                                          "myOrders":  "我的订单",
                                          "receiptConfirmed":  "已确认收货",

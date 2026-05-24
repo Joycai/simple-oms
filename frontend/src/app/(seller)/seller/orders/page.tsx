@@ -9,11 +9,24 @@ export default function SellerOrdersPage() {
   const { t, locale } = useI18n()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [statusFilter, dateFrom, dateTo])
 
   async function load() {
-    try { setOrders(await fetchSellerOrders()) } finally { setLoading(false) }
+    try {
+      const params = new URLSearchParams()
+      if (statusFilter) params.set('status', statusFilter)
+      if (dateFrom) params.set('dateFrom', new Date(dateFrom).toISOString())
+      if (dateTo) params.set('dateTo', new Date(dateTo + 'T23:59:59').toISOString())
+      const { fetchSellerOrders } = await import('@/lib/order-api')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:8081/api/v1'}/seller/orders?${params}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
+      })
+      setOrders(await res.json())
+    } finally { setLoading(false) }
   }
 
   async function handleMarkPaid(id: number) {
@@ -34,7 +47,23 @@ export default function SellerOrdersPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <h1 className="mb-6 font-serif text-2xl font-bold text-slate-900 dark:text-slate-50">{t('orderService.seller.orders')}</h1>
-      
+
+      <div className="mb-4 flex flex-wrap gap-3">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
+          <option value="">All Status</option>
+          <option value="PENDING_PAYMENT">Pending Payment</option>
+          <option value="PAID">Paid</option>
+          <option value="SHIPPING">Shipping</option>
+          <option value="DELIVERED">Delivered</option>
+        </select>
+        <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+        <span className="text-sm text-slate-500 self-center">to</span>
+        <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+          className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
+      </div>
+
       <div className="space-y-4">
         {orders.map((o: any) => (
           <div key={o.id} className="rounded-xl border bg-white p-4 dark:bg-slate-900 dark:border-slate-800">
@@ -45,7 +74,7 @@ export default function SellerOrdersPage() {
               </div>
               <div className="flex gap-2">
                 <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {o.paymentStatus === 'paid' ? (locale === 'zh-CN' ? '已付款' : 'Paid') : (locale === 'zh-CN' ? '待付款' : 'Unpaid')}
+                  {t('orderService.account.status.' + o.paymentStatus.toLowerCase())}
                 </div>
                 <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
                    {t('orderService.account.status.' + o.status.toLowerCase())}
