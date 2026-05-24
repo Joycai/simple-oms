@@ -1,4 +1,4 @@
-﻿{
+{
     "login":  {
                   "title":  "simple-oms",
                   "subtitle":  "登录您的账户",
@@ -181,7 +181,11 @@
                                                            "topLevel":  "顶级品类",
                                                            "add":  "添加品类",
                                                            "update":  "更新品类"
-                                                       }
+                                                       },
+                                        "filters":  {
+                                                        "to":  "至",
+                                                        "allStatus":  "所有状态"
+                                                    }
                                     }
                      },
     "nav":  {

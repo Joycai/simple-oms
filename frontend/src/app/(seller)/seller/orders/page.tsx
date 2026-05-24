@@ -6,7 +6,7 @@ import { fetchSellerOrders, markPaid, shipOrder } from '@/lib/order-api'
 import { useI18n } from '@/lib/i18n'
 
 export default function SellerOrdersPage() {
-  const { t, locale } = useI18n()
+  const { t } = useI18n()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('')
@@ -17,15 +17,13 @@ export default function SellerOrdersPage() {
 
   async function load() {
     try {
-      const params = new URLSearchParams()
-      if (statusFilter) params.set('status', statusFilter)
-      if (dateFrom) params.set('dateFrom', new Date(dateFrom).toISOString())
-      if (dateTo) params.set('dateTo', new Date(dateTo + 'T23:59:59').toISOString())
-      const { fetchSellerOrders } = await import('@/lib/order-api')
-      const res = await fetch(`${process.env.NEXT_PUBLIC_ORDER_API || 'http://localhost:8081/api/v1'}/seller/orders?${params}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('access_token')}` }
-      })
-      setOrders(await res.json())
+      const params: any = {}
+      if (statusFilter) params.status = statusFilter
+      if (dateFrom) params.dateFrom = new Date(dateFrom).toISOString()
+      if (dateTo) params.dateTo = new Date(dateTo + 'T23:59:59').toISOString()
+      
+      const list = await fetchSellerOrders(params)
+      setOrders(list)
     } finally { setLoading(false) }
   }
 
@@ -35,7 +33,7 @@ export default function SellerOrdersPage() {
   }
 
   async function handleShip(id: number) {
-    const tracking = prompt(t('orderService.seller.trackingPlaceholder'))
+    const tracking = prompt(t('orderService.seller.trackingPlaceholder'))       
     if (tracking) {
       await shipOrder(id, tracking)
       await load()
@@ -51,15 +49,15 @@ export default function SellerOrdersPage() {
       <div className="mb-4 flex flex-wrap gap-3">
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
           className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800">
-          <option value="">All Status</option>
-          <option value="PENDING_PAYMENT">Pending Payment</option>
-          <option value="PAID">Paid</option>
-          <option value="SHIPPING">Shipping</option>
-          <option value="DELIVERED">Delivered</option>
+          <option value="">{t('orderService.seller.filters.allStatus')}</option>
+          <option value="PENDING_PAYMENT">{t('orderService.account.status.pending_payment')}</option>
+          <option value="PAID">{t('orderService.account.status.paid')}</option>
+          <option value="SHIPPING">{t('orderService.account.status.shipping')}</option>
+          <option value="DELIVERED">{t('orderService.account.status.delivered')}</option>
         </select>
         <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
           className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
-        <span className="text-sm text-slate-500 self-center">to</span>
+        <span className="text-sm text-slate-500 self-center">{t('orderService.seller.filters.to')}</span>
         <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
           className="rounded-lg border px-3 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200" />
       </div>
@@ -77,7 +75,7 @@ export default function SellerOrdersPage() {
                   {t('orderService.account.status.' + o.paymentStatus.toLowerCase())}
                 </div>
                 <div className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${o.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
-                   {t('orderService.account.status.' + o.status.toLowerCase())}
+                   {t('orderService.account.status.' + o.status.toLowerCase())} 
                 </div>
               </div>
             </div>
@@ -93,7 +91,7 @@ export default function SellerOrdersPage() {
                 )}
                 {o.status === 'PAID' && (
                   <button onClick={() => handleShip(o.id)}
-                    className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">{t('orderService.seller.ship')}</button>
+                    className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">{t('orderService.seller.ship')}</button>     
                 )}
                 <Link href={`/seller/orders/${o.id}`}
                   className="rounded border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">

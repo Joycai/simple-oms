@@ -1,4 +1,4 @@
-﻿{
+{
     "login":  {
                   "title":  "simple-oms",
                   "subtitle":  "Sign in to your account",
@@ -181,7 +181,11 @@
                                                            "topLevel":  "Top Level",
                                                            "add":  "Add Category",
                                                            "update":  "Update Category"
-                                                       }
+                                                       },
+                                        "filters":  {
+                                                        "to":  "to",
+                                                        "allStatus":  "All Status"
+                                                    }
                                     }
                      },
     "nav":  {
