@@ -5,8 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useI18n } from '@/lib/i18n'
 import { logout, getUser, hasRole } from '@/lib/auth'
-import { LanguageToggle }
-import { UnifiedNav } from '@/components/LanguageToggle'
+import { LanguageToggle } from '@/components/LanguageToggle'
+import { UnifiedNav } from '@/components/UnifiedNav'
 
 const navGroups = [
   {
