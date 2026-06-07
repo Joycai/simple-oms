@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
 import { ItemCard } from '@/components/ItemCard'
 import { CategorySidebar } from '@/components/CategorySidebar'
