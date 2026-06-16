@@ -1,0 +1,53 @@
+package com.joycai.simpleoms.model
+
+import jakarta.persistence.*
+import java.time.Instant
+
+@Entity
+@Table(name = "users")
+class User(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
+    @Column(nullable = false, unique = true, length = 50)
+    var username: String,
+
+    @Column(nullable = false)
+    var password: String,
+
+    @Column(unique = true, length = 100)
+    var email: String? = null,
+
+    @Column(length = 50)
+    var nickname: String? = null,
+
+    @Column(length = 30)
+    var phone: String? = null,
+
+    @Column(nullable = false)
+    var enabled: Boolean = true,
+
+    @Column(name = "created_at", nullable = false)
+    var createdAt: Instant = Instant.now(),
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = [JoinColumn(name = "user_id")],
+        inverseJoinColumns = [JoinColumn(name = "role_id")],
+    )
+    var roles: MutableList<Role> = mutableListOf(),
+
+    @Column(length = 32)
+    var totpSecret: String? = null,
+
+    @Column(nullable = false)
+    var totpEnabled: Boolean = false,
+
+    @Column(length = 2000)
+    var recoveryCodes: String? = null, // BCrypt hashes separated by '|'
+) {
+    override fun equals(other: Any?): Boolean = other is User && other.id == id
+    override fun hashCode(): Int = id.hashCode()
+}
