@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "2.3.21"
-    kotlin("plugin.spring") version "2.3.21"
-    id("io.spring.dependency-management") version "1.1.7"
+    kotlin("jvm")
+    kotlin("plugin.spring")
+    id("io.spring.dependency-management")
     `maven-publish`
 }
 
@@ -16,6 +16,8 @@ publishing {
 
 group = "com.joycai"
 version = "1.0.1"
+
+extra["kotlin.version"] = "2.3.21"
 
 java {
     toolchain {
