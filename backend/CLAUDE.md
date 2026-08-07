@@ -145,7 +145,7 @@ Services use Spring externalized configuration via `application.yml`:
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` — Database connection
 - `REDIS_HOST`, `REDIS_PORT` — Redis connection (iam-service only)
 - `IAM_CLIENT_SECRET` — order-service's client credential for iam-service
-- `CORS_ALLOWED_ORIGINS` — CORS origins (default: http://localhost:3200, should be 3060)
+- `CORS_ALLOWED_ORIGINS` — CORS origins (default: http://localhost:3060)
 - `UPLOAD_DIR` — File upload directory (order-service)
 
 **Key Defaults**:
